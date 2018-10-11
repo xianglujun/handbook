@@ -167,4 +167,84 @@
                                             - 获取`value-type`属性
                                             - 创建`ManagedList`对象
                                             - 设置`ManagedList`的`setElementTypeName`的属性为`elementType`
-                                            - 判断当前`<list>`节点是否包含了`merge`属性, 如果没有设置该属性, 则获取`<beans>`根节点中的`default-merge`属性, 并设置`ManagedArray`的`setMergeEnabled`属性
+                                            - 判断当前`<list>`节点是否包含了`merge`属性, 如果没有设置该属性, 则获取`<beans>`根节点中的`default-merge`属性, 并设置`ManagedList`的`setMergeEnabled`属性
+                                            - 获取当前`<list>`下的所有节点, 并解析为对应的引用对象, 并通过`ManagedList`的`add`方法加入到列表之中
+                                        - 判断是否为`<set>`节点
+                                          - 获取`value-type`属性
+                                          - 创建`ManagedSet`对象
+                                          - 设置`ManagedSet`的`setElementTypeName`的属性为`elementType`
+                                          - 判断当前`<set>`节点是否包含了`merge`属性, 如果没有设置该属性, 则获取`<beans>`根节点中的`default-merge`属性, 并设置`ManagedSet`的`setMergeEnabled`属性
+                                          - 获取当前`<set>`下的所有节点, 并解析为对应的引用对象, 并通过`ManagedSet`的`add`方法加入到列表之中
+                                        - 判断是否为`<map>`节点
+                                          - 获取`<map>` 节点中的`key-type`属性, 用于表示`map`的`key`的类型
+                                          - 获取`<map>`节点中的`value-type`属性, 用于表示`map`的`value`的类型
+                                          -  获取所有的`<entry>`节点
+                                          - 创建`ManagedMap`的对象
+                                          - 设置`ManageMap`中的`setKeyTypeName`的值为`key-type`属性
+                                          - 设置`ManageMap`中的`setValueTypeName`的值为`value-type`属性
+                                          - 判断`<map>`节点中的`merge`属性, 如果没有设置该属性, 则获取`<beans>`根节点中的`default-merge`属性, 并设置`MangedMap`的`setMergeEnabled`属性
+                                          - 遍历`<entry>`所有节点
+                                            - 获取`map`的key节点
+                                              - 判断当前`<entry>`节点下的素有节点, 并获取`<key>`和`<value>`的节点, 并分别存储为`keyEle`和`valueEle`
+                                              - 判断`<entry>`节点是否已包含了`key`和`key-ref`属性
+                                              - 如果包含了`key`属性, 则通过`key`和`keyType`构建`TypedStringValue`对象
+                                              - 如果包含了`key-ref`属性, 则通过获取`key-ref`属性的值`refName`, 并构建`RuntimeBeanReference(refName)`对象
+                                              - 如果没有配置`key`和`key-ref`属性, 则通过获取`keyEle`的节点信息，并解析成为表示的引用类型
+                                            - 获取`map`的`value`信息
+                                              - 判断`<entry>`节点是否包含了`value`和`value-ref`的属性
+                                              - 如果`value`属性已经包含, 则通过`value`属性值和`value-type`构建`TypedStringValue`对象
+                                              - 如果`value`属性没有包含, 则获取`value-ref`的属性值`refName`,并封装成为`RuntimeBeanReference(refName)`对象
+                                              - 如果没有设置`value`和`value-ref`的属性, 则通过`valueEle`获取属性的值, 然后继续遍历`<value>`节点, 并返回对应的封装引用对象
+                                          - 将上面解析到的`key`和`value`的值放入`ManagedMap`集合之中
+                                        - 如果是`<props>`节点
+                                          - 创建`ManagedProperties`对象
+                                          - 判断`<props>`节点中是否设置了`merge`属性, 如果没有设置, 则获取`<beans>`节点中的`default-merge`节点的配置, 并设置`ManagedProperties`的`setMergeEnabled`属性
+                                          - 遍历`<props>`下的所有`<prop>`节点
+                                            - 获取`<prop>`节点中的`key`属性
+                                            - 获取`<prop>`节点中的text内容
+                                            - 根据`key`创建`TypedStringValue`为`keyValue`
+                                            - 根据`value`创建`TypedStringValue`为`value`
+                                            - 将`value`和`keyValue`通过`ManagedProperties`.`put`属性计入到兑现该引用中
+        - parsePropertyElements(Element beanEle, BeanDefinition bd)
+          - 解析`<property>`的节点
+            - 获取`<bean>`下的所有`<property>`节点列表
+            - 获取`<property>`节点的`name属性`
+            - 在`parseState`中压入当前正在解析的`<property>`节点
+            - 解析`<property>`节点的`key`和`value`属性或者其子节点信息, 例如`<list>`, `<set>`等
+            - 创建`PropertyValue`对象, `PropertyValue(key, value)`
+            - 获取`<property>`下的`<meta>`节点， 并将`<meta>`节点的`key`和`value`属性设置到`BeanMetadataAttribute`对象之中
+            - `PropertyValue`设置`addMetadataAttribute`, 其值为`BeanMetadataAtrribute`
+            - 通过`BeanDefinition`的`getPropertyValues`将当前加载的`PropertyValue`属性, 加载到列表之中
+            - 将当前正在解析的`<property>`从`parseState`中进行移除
+        - parseQualifierElements(Element beanEle, AbstractBeanDefinition bd)
+          - 解析`<qualifier>`节点信息
+            - 获取`<qualifier>`节点的`type`属性
+            - 如果`type`属性设置, 则将当前正在解析的`qualifier`节点加入到`parseState`中
+            - 创建`AutowireCandidateQualifier(typeName)`对象
+            - 获取`<qualifier>`节点的`value`的属性,
+            - 通过`AutowireCandidateQualifier`的`setAttributes`将value值设置到对象之中
+            - 获取所有`<attribute>`节点
+            - 遍历`<attribute>`节点
+            - 获取`<attribute>`节点的`key`和`value`属性
+            - 将对应的值存放在`BeanMetadataAttribute(key, value)`之中
+          - 将`AutowireCandidateQualifier`信息存放到`BeanDefnition之中`
+        - 将`readerContext`中的`Resource`与当前线程进行绑定
+        -
+    - 判断`Bedefinition`是否创建成功
+      - 判断当前的beanName是否不为空
+        - 如果当前的`beanName`不存在
+          - 如果`constainBean`不为空, 则代表当前的`BeanDefinition`是一个嵌套的`bean`, 一次`beanNmae`的生成规则是
+            - BeanDefinitionUtils.generateBeanName(
+			BeanDefinition definition, BeanDefinitionRegistry registry, boolean isInnerBean)
+              - 获取当前`BeanDefinition`的`beanClassName`
+              - 如果`beanClassName`为空, 则获取当前`BeanDefinition`的`getParentName`
+                - 如果`parentName`不为空, 则以`parentName$child`进行注册
+                - 如果`parentName`为空, 则获取`BeanDefinition`的`getFactroryBeanName`的名称
+                  - 如果`factoryBeanName`不为空, 则以`factoryBeanName$created`作为`beanName`
+              - 如果`innerBean`为true, 则以`beanName` + `#` +`BeanDefinition`的`hashcode`的值作为名称
+              - 如果`innerBean`为false, 判断`BeanDefinitionRegistry`总是是否已经包含了`beanName`, 如果已经包含, 则以`beanName` + `#` + `count++`来实现
+          - 根据生成的`BeanDefinition`, `beanName`, `aliasArray`创建`BeanDefinitionHolder(BeanDefinition, beanName, aliasArray)`
+- 通过调用`BeanDefinitionDelegate`.`decorateBeanDefinitionIfRequired(Element, BeanDefinition)`, 该方法的主要目的是, 对于非`/beans`空间中的标签，需要通过不同的`NameSpaceHandler`进行相应的处理
+- `BeanDefinitionReaderUtils`.`registerBeanDefinition(BeanDefinitionHolder definitionHolder, BeanDefinitionRegistry registry)`
+  - 该方法主要完成的是将当前的`BeanDefinition`注册到`BeanDefinitionRegistry`中去
+    - 因为这里通过`DefaultListableBeanFactory`进行`BeanDefinition`的注册, 因此可以看到, 会根据`beanName`将当前正在创建的`singleton`或者正在创建的`bean`进行销毁, 同时销毁当前已经存在的所有的依赖的缓存信息, 以及对依赖的`bean`全部进行销毁操作.
