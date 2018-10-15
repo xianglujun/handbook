@@ -1,3 +1,17 @@
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [jvm的常用命令](#jvm的常用命令)
+	- [jps](#jps)
+		- [jps相关参数](#jps相关参数)
+		- [实例](#实例)
+	- [jstack](#jstack)
+		- [分析CPU使用100%的原因](#分析cpu使用100的原因)
+	- [jmap](#jmap)
+	- [jinfo](#jinfo)
+	- [jstat](#jstat)
+	- [javap](#javap)
+
+<!-- /TOC -->
 # jvm的常用命令
 ## jps
 > 显示当前java的进程以及相关参数
