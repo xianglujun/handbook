@@ -14,7 +14,7 @@
     - [parseReplacedMethodSubElements(Element beanEle, MethodOverrides overrides)](BeanDefinitionParserDelate_process.md#parseReplacedMethodSubElements)
     - [parseConstructorArgElements(Element beanEle, BeanDefinition bd)](BeanDefinitionParserDelate_process.md#parseConstructorArgElements)
     - [parsePropertyElements(Element beanEle, BeanDefinition bd)](BeanDefinitionParserDelate_process.md#parsePropertyElements)
-    - [parseQualifierElements(Element beanEle, AbstractBeanDefinition bd)]{BeanDefinitionParserDelate_process.md#parseQualifierElements}
+    - [parseQualifierElements(Element beanEle, AbstractBeanDefinition bd)](BeanDefinitionParserDelate_process.md#parseQualifierElements)
     - 将`readerContext`中的`Resource`与当前线程进行绑定
     -
 - 判断`Bedefinition`是否创建成功
