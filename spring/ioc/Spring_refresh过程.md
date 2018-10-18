@@ -1,4 +1,22 @@
-[toc]
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [refresh()过程](#refresh过程)
+	- [总结](#总结)
+		- [预置系统的实例对象](#预置系统的实例对象)
+	- [prepareRefresh](#preparerefresh)
+	- [obtainFreshBeanFactory](#obtainfreshbeanfactory)
+	- [prepareBeanFactory](#preparebeanfactory)
+	- [postProcessBeanFactory(BeanFactory beanFactory)](#postprocessbeanfactorybeanfactory-beanfactory)
+	- [invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory)](#invokebeanfactorypostprocessorsconfigurablelistablebeanfactory-beanfactory)
+	- [registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory)](#registerbeanpostprocessorsconfigurablelistablebeanfactory-beanfactory)
+	- [initMessageSource()](#initmessagesource)
+	- [initApplicationEventMulticaster()](#initapplicationeventmulticaster)
+	- [onrefresh()](#onrefresh)
+	- [registerListeners()](#registerlisteners)
+	- [finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory)](#finishbeanfactoryinitializationconfigurablelistablebeanfactory-beanfactory)
+	- [finishRefresh()](#finishrefresh)
+
+<!-- /TOC -->
 # refresh()过程
 记录在`AbstractApplicationContext`中对于`refresh()`方法的执行过程, 该方法使用了`模板方法模式`, 通过`hook`的方式完成刷新过程
 
