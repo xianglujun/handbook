@@ -130,7 +130,7 @@
 ## parsePropertySubElement_NO_DEFAULT_VALUE
 ### parsePropertySubElement(Element ele, BeanDefinition bd)
 该方法主要用来解析子节点, 包含了`bean`,`list`,`set`,`props`,`map`的节点
-  - [parsePropertySubElement(Element ele, BeanDefinition bd, String defaultValueType)](#parsePropertySubElement)
+  - [parsePropertySubElement(Element ele, BeanDefinition bd, String defaultValueType)](#parsepropertysubelement)
 
 
 ## parsePropertySubElement
