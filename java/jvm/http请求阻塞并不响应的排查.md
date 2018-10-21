@@ -4,16 +4,17 @@
 重启系统, 能够正常访问数据, 在系统运行不到一分钟, 所有的http请求全部阻塞, 并没有返回数据
 
 ## 排查过程
-1. lsof -i:9081
+1. `lsof -i:9081`
 通过该命令查看端口状态,
-
-> java    27142 jenkins  215u  IPv4 101808939      0t0  TCP *:9081 (LISTEN)
-> java    27142 jenkins  226u  IPv4 101923132      0t0  TCP bu-core-dubbo-zookeeper1:9081->10.200.173.208:54942 > (ESTABLISHED)
-> java    27142 jenkins  230u  IPv4 101934538      0t0  TCP bu-core-dubbo-zookeeper1:9081->10.200.173.207:42054 > (ESTABLISHED)
+```sh
+java    27142 jenkins  215u  IPv4 101808939      0t0  TCP *:9081 (LISTEN)
+java    27142 jenkins  226u  IPv4 101923132      0t0  TCP bu-core-dubbo-zookeeper1:9081->10.200.173.208:54942 > (ESTABLISHED)
+java    27142 jenkins  230u  IPv4 101934538      0t0  TCP bu-core-dubbo-zookeeper1:9081->10.200.173.207:42054 > (ESTABLISHED)
+```
 
 通过显示信息来看, `9081`处于正常的监听状态
 
-2. netstat -apn | grep 9081
+2. `netstat -apn | grep 9081`
 通过netstat查看当前的端口的链接状况, 发现`CLOSE_WAIT`状态的链接有60多个，初步断定应该是程序中发生了异常，导致程序无法正常结束线程的链接.
 
 3. 查看error日志
