@@ -40,3 +40,15 @@ ls /
 create /workers ""
 ```
 创建了一个节点, ""表示不想为当前的`/workers`节点初始化任何数据。
+
+9. 创建一个临时节点
+```sh
+create -e /workers ""
+```
+
+10. 监听一个节点
+```sh
+stat /workers true
+```
+
+通过`stat`的命令可以获取znode节点的属性, 并允许我们能够在znode节点上创建监听点. 通过在zone路径后设置true来实现。
