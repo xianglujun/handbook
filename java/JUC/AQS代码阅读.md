@@ -391,8 +391,59 @@ private void setHeadAndPropagate(Node node, int propagate) {
 
 该方法的使用和`acquire`的实现很相似, 只不过共享资源的获取, 回去唤醒其后的节点, 用于去获取共享资源
 
-### 3.4 releaseShared
+## 3.4 releaseShared(int)
+此方法会在共享模式中释放指定数量的共享资源, 如果释放成功, 并唤醒正在等待资源的线程。它会唤醒等待对类中的其他线程获取共享资源。
+```java
+public final boolean releaseShared(int arg) {
+    // 尝试释放资源
+    if (tryReleaseShared(arg)) {
+      // 唤醒后续节点
+      doReleaseShared();
+      return true;
+    }
+    return false;
+  }
+```
+此方法的流程为: ==释放共享资源, 唤醒等待队列的线程==, 这里需要与`tryRelease()`进行区别, tryRelease只会在`state==0`的时候, 才会返回true, 是以为它是以独占资源的方式. 而`tryReleaseShared()`的有剩余资源的时候, 则会去唤醒等待队列的线程获取剩余的资源。
 
+### 3.4.1 doReleaseShared()
+```java
+private void doReleaseShared() {
+    /*
+     * Ensure that a release propagates, even if there are other
+     * in-progress acquires/releases. This proceeds in the usual
+     * way of trying to unparkSuccessor of head if it needs
+     * signal. But if it does not, status is set to PROPAGATE to
+     * ensure that upon release, propagation continues.
+     * Additionally, we must loop in case a new node is added
+     * while we are doing this. Also, unlike other uses of
+     * unparkSuccessor, we need to know if CAS to reset status
+     * fails, if so rechecking.
+     */
+    for (; ; ) {
+      Node h = head;
+      if (h != null && h != tail) {
+        int ws = h.waitStatus;
+        if (ws == Node.SIGNAL) {
+          if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0)) {
+            continue; // loop to recheck cases
+          }
+          unparkSuccessor(h);
+        } else if (ws == 0 &&
+            !compareAndSetWaitStatus(h, 0, Node.PROPAGATE)) {
+          continue; // loop on failed CAS
+        }
+      }
+      if (h == head) // loop if head changed
+      {
+        break;
+      }
+    }
+  }
+```
+
+## 3.5 小结
+以上为AQS的独占方式和共享方式的源码实现, 主要通过两个方法来实现（acquire和acquireShared）方法来获取资源, 但这两种方式产生的阻塞, 都不会响应中断阻塞, 都会在回去到资源之后才会响应阻断的请求。
 
 ## 参考文章
 [JAVA并发之AQS](https://www.cnblogs.com/waterystone/p/4920797.html)
