@@ -39,3 +39,7 @@ ERROR 1062 (23000): Duplicate entry '1' for key 'PRIMARY'
 以上主要操作了两个事务, 在`TRANSACTION1`中判断`id=1`的记录不存在, 准备插入一个`id = 1`的记录, 但是在这期间, `TRANSACTION2`插入了一条`id = 1`的记录, 这是导致了`TRANSACTION1`插入失败，但是当通过`select * from where id = 1`查询这条记录时, 却查询不到这条记录, 这是因为`mysql`采用了`REPEATABLE READ`的策略，导致了其他事务提交的数据不能被读取到。
 
 解决幻读最好的办法就是通过`锁`的方式对需要操作的数据加锁, 防止事务执行失败。
+
+> NOTE: 在`Serializable`隔离级别之下, 查询语句默认的都会加锁(共享锁(S)), 因此这种的话, `TRANSACTION1`的第三部可以正常执行,`TRANSACTION2`等待锁的释放.
+
+![Serializable查询锁](../img/mysql/SERIZIABLE_SELECT_LOCK.png)
