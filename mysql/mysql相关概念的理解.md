@@ -27,14 +27,14 @@ TRANSACTION1: SELECT * FROM p WHERE id < 5;
 3. 幻读
 幻读指的是两个事务之间, 操作相同的数据差生了冲突，导致另外一个事务无法正常执行业务的后续操作。
 
-TRANSACTION1: BEGIN;
-TRANSACTION1: SELECT * FROM WHERE id = 1;
+TRANSACTION1: `BEGIN`;
+TRANSACTION1: `SELECT * FROM WHERE id = 1`;
 
-TRANSACTION2: BEGIN;
-TRANSACTION2: INSERT INTO p VALUES (1);
+TRANSACTION2: `BEGIN`;
+TRANSACTION2: `INSERT INTO p VALUES (1)`;
 
-TRANSACTION1: INSERT INTO p VALUES (1);
-ERROR 1062 (23000): Duplicate entry '1' for key 'PRIMARY'
+TRANSACTION1: `INSERT INTO p VALUES (1)`;
+ERROR 1062 (23000): `Duplicate entry '1' for key 'PRIMARY'`
 
 以上主要操作了两个事务, 在`TRANSACTION1`中判断`id=1`的记录不存在, 准备插入一个`id = 1`的记录, 但是在这期间, `TRANSACTION2`插入了一条`id = 1`的记录, 这是导致了`TRANSACTION1`插入失败，但是当通过`select * from where id = 1`查询这条记录时, 却查询不到这条记录, 这是因为`mysql`采用了`REPEATABLE READ`的策略，导致了其他事务提交的数据不能被读取到。
 
