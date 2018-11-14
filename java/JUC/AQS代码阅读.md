@@ -83,9 +83,9 @@ private Node addWaiter(Node mode) {
 
 对于Node而言, 有一下四种状态需要说明:
 - `CANCELLED` : 值为1，在等待队列中等待超时, 或者线程等待被中断, 从要从线程等待队列中移除该NODE节点。即`waitStatus`的状态为`CANCELLED`，并且该节点的状态不会再改变。
-- `SIGNAL` - 值为-1, 该状态处于唤醒状态, 当前面的节点处于释放资源或者被取消, 将会通知其后继节点执行
-- `CONDITION` - 值为-2, 该标识的节点处于`等待队列`中, 节点的线程等待在`Condition`上, 当其他的线程调用了`Condition`的`signal`后, 将从`等待队列`转移到同步队列中, 并获取同步锁
-- `PROPAGATE` - 值为-3, 与共享模式相关, 在共享模式中, 该状态表明节点处于可以执行的状态。
+- `SIGNAL` - 值为``-1``, 该状态处于唤醒状态, 当前面的节点处于释放资源或者被取消, 将会通知其后继节点执行
+- `CONDITION` - 值为``-2``, 该标识的节点处于`等待队列`中, 节点的线程等待在`Condition`上, 当其他的线程调用了`Condition`的`signal`后, 将从`等待队列`转移到同步队列中, 并获取同步锁
+- `PROPAGATE` - 值为``-3``, 与共享模式相关, 在共享模式中, 该状态表明节点处于可以执行的状态。
 - `0` 表示一个初始化的状态。
 
 > NOTE: 通过`waitStatus > 0`表示`CANCELLED`和`waitStatus < 0`表示有效状态
@@ -147,7 +147,7 @@ final boolean acquireQueued(final Node node, int arg) {
   }
 ```
 
-这个方法会判断, 如果需要排队的节点高寒处于第二个节点, 则尝试获取资源的状态, 如果失败, 则需要将当前的节点寻找到能够park的位置.
+这个方法会判断, 如果需要排队的节点高寒处于第二个节点, 则尝试获取资源的状态, 如果失败, 则需要将当前的节点寻找到能够`park`的位置.
 
 #### 1.4.1 shouldParkAfterFailedAcquire(Node, Node)
 该方法检查状态, 主要检查当前的排队的节点是否能够进入park状态
@@ -212,6 +212,187 @@ private final boolean parkAndCheckInterrupt() {
 - 如果线程在等待过程中被中断, 并不会立即响应, 而是等到拿到资源后, 通过`selfInterrupt`进行自我中断。
 
 ![acquire执行流程](../../img/acquire_process.png)
+
+## 2. release(int)
+该方法用于释放独占模式的锁资源, 如果彻底释放了资源(state == 0 表明释放锁完成), 则会唤醒队列中的其他资源竞争资源,
+```java
+public final boolean release(int arg) {
+    if (tryRelease(arg)) {
+      Node h = head;
+      // 这里回去判断, 如果当前的node状态不是0，代表了
+      // 有后续的节点在等待, 因为在独占模式中, 如果有后续等待节点,
+      // 会将当前的节点的状态设置为SIGNAL状态
+      if (h != null && h.waitStatus != 0) {
+        unparkSuccessor(h);
+      }
+      return true;
+    }
+    return false;
+  }
+```
+
+这里主要通过`trayRelease`的方法进行锁的释放. ==*这里主要通过tryRelease()方法的返回值判断是否释放成功, 所以当我们在实现tryRelease方法的时候, 需要特别的注意这一点*==
+
+### 2.1 tryRelease(int arg)
+```java
+protected boolean tryRelease(int arg) {
+    throw new UnsupportedOperationException();
+  }
+```
+该方法是一个hook方法, 当我们需要自定义实现同步器的时候, 需要实现该方法。 一般来讲, tryRelease都会成功的, 因为这是独占模式, 当线程来释放资源, 那么可以证明当前的线程肯定已经获取到独占资源了。 直接减掉对应的资源就可以了, 也不需要考虑线程的安全问题了。(根据同步器的实现, 会根据tryRelease()方法的返回值来判断是否已经释放资源, 因此当state=0的时候则返回true, 否则返回false.)
+
+### 2.2 unparkSuccessor(Node node)
+```java
+private void unparkSuccessor(Node node) {
+    /*
+     * If status is negative (i.e., possibly needing signal) try
+     * to clear in anticipation of signalling. It is OK if this
+     * fails or if status is changed by waiting thread.
+     */
+    int ws = node.waitStatus;
+    if (ws < 0) {
+      // 在进行唤醒的后继节点的时候, 会降当前的node节点设置为初始化状态
+      compareAndSetWaitStatus(node, ws, 0);
+    }
+
+    /*
+     * Thread to unpark is held in successor, which is normally
+     * just the next node.  But if cancelled or apparently null,
+     * traverse backwards from tail to find the actual
+     * non-cancelled successor.
+     */
+    Node s = node.next;
+    // 如果下一个节点为空或者已经被取消
+    if (s == null || s.waitStatus > 0) {
+      s = null;
+
+      // 这里的遍历主要是如果下一个节点为空或者已经被取消, 则从tail节点依次向
+      // 前进行遍历, 并获取处于正常状态的节点并唤醒
+      for (Node t = tail; t != null && t != node; t = t.prev) {
+        if (t.waitStatus <= 0) {
+          s = t;
+        }
+      }
+    }
+    // 如果s的节点确实存在, 则调用唤醒的状态
+    if (s != null) {
+      LockSupport.unpark(s.thread);
+    }
+  }
+```
+
+这里通过`unpark()`方法唤醒了下一个不是`CANCELLED`状态的线程, 这是我们可以通过将`acquireQueued()`方法进行联系, 当线程被唤醒之后, 主要有一下步骤:
+- 获取`interrupted`的状态, 并返回
+- 如果`interrupted`状态为`true`, 则表明线程被打断, 但是依然回去获取独占资源(自旋)
+- 这是`predecessor`的节点等于`head`节点, 则获得了回去独占资源的资格
+- `tryAcquire`获取到独占资源
+- do you want do........
+
+### 2.3 小结
+`release()`方法主要是释放独占资源, 最终状态为`state == 0`, 并通知等待队列的线程获取独占资源。
+
+## 3. acquireShared(int)
+这个方式是获取共享模式的入口, 主要是尝试获取共享资源, 获取失败则进入到等待队列。
+```java
+public final void acquireShared(int arg) {
+    if (tryAcquireShared(arg) < 0) {
+      doAcquireShared(arg);
+    }
+  }
+```
+
+在获取共享资源的时候, 主要通过`tryAcquireShared`的方式获取资源, 在这个方法中, 定义了基本的语法规则:
+- 负数: 代表获取失败
+- 0: 获取成功, 但是没有剩余资源
+- 正数: 获取成功, 还有剩余资源可以获取
+
+1. `tryAcquireShared()`尝试获取共享资源
+2. 如果获取共享资源失败, 则通过`doAcquireShared()`将线程加入到等待队列
+
+### 3.1 doAcquireShared(int arg)
+```java
+private void doAcquireShared(int arg) {
+    // 将当前的线程加入到队尾
+    final Node node = addWaiter(Node.SHARED);
+    try {
+      boolean interrupted = false;
+      for (; ; ) {
+        final Node p = node.predecessor();
+        // 如果前继节点为head, 尝试否是能够获取到共享资源
+        // 因为head是正在执行的线程, 这是线程执行到这里, 可能是head已经被执行完成,
+        // 则尝试获取锁
+        if (p == head) {
+          int r = tryAcquireShared(arg);
+          // 如果资源不够, 则继续寻找park点
+          if (r >= 0) { // 获取共享资源成功
+            // 将head指向自己, 如果还有剩余的资源, 则唤醒其后的节点资源
+            setHeadAndPropagate(node, r);
+            p.next = null; // help GC
+            if (interrupted) {
+              // 如果当前的线程通过interrupted的方式打断, 则执行自我中断的方式
+              selfInterrupt();
+            }
+            return;
+          }
+        }
+        // 尝试获取共享资源失败, 则找到能够park的位置
+        // 并进行park, 等待被interrupted或者unpark
+        if (shouldParkAfterFailedAcquire(p, node) &&
+            parkAndCheckInterrupt()) {
+          interrupted = true;
+        }
+      }
+    } catch (RuntimeException ex) {
+      cancelAcquire(node);
+      throw ex;
+    }
+  }
+```
+在这里的实现中, 只有当前的线程处于head的下一个节点时, 才会去获取共享资源。并唤醒之后的其他节点获取共享资源。
+
+> NOTE: 如果当前的线程获取资源不能满足的时候, 则会一直阻塞, 不会讲执行权利让出。
+> 例如: head释放了5个资源, 第二个需要6个资源, 第三个需要1个资源, 第四个需要2个资源, 这是第二个在发现资源不够的时候, 不会讲执行的权利让个第三个和第四个执行， 而是继续park操作, 等待共享资源的释放。
+
+### 3.1.1 setHeadAndPropagate(Node, int);
+```java
+private void setHeadAndPropagate(Node node, int propagate) {
+    Node h = head; // Record old head for check below
+    setHead(node);
+    /*
+     * Try to signal next queued node if:
+     * Propagation was indicated by caller,
+     * or was recorded (as h.waitStatus) by a previous operation
+     * (note: this uses sign-check of waitStatus because
+     * PROPAGATE status may transition to SIGNAL.)
+     * and
+     * The next node is waiting in shared mode,
+     * or we don't know, because it appears null
+     *
+     * The conservatism in both of these checks may cause
+     * unnecessary wake-ups, but only when there are multiple
+     * racing acquires/releases, so most need signals now or soon
+     * anyway.
+     */
+    if (propagate > 0 || h == null || h.waitStatus < 0) {
+      Node s = node.next;
+      if (s == null || s.isShared()) {
+        doReleaseShared();
+      }
+    }
+  }
+```
+该方法主要将获取到共享资源的node设置为head节点, 如果满足还有资源的时候, 则去告知邻居节点, 获取共享资源
+
+
+### 3.2 小结
+这里获取共享资源就学习的差不多了, 主要做了一下两件事情:
+- `tryAcquireShared()`尝试获取共享资源, 如果获取成功, 则返回
+- `doAcquireShared()`用于获取共享资源, 并park等待线程被`interrupted`或者`unpark`, 不会响应`interrupt`的操作
+
+该方法的使用和`acquire`的实现很相似, 只不过共享资源的获取, 回去唤醒其后的节点, 用于去获取共享资源
+
+### 3.4 releaseShared
+
 
 ## 参考文章
 [JAVA并发之AQS](https://www.cnblogs.com/waterystone/p/4920797.html)
