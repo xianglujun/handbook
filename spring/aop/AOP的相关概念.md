@@ -43,3 +43,27 @@ Advice作为通知, 定义了在切入点应该做什么,  为切面提供织入
 
 - JDK Proxy 的代理对象, 主要通过`InvocationHandler`来实现拦截器的回调
 - CGLIB Proxy 使用第三方的代理实现, 需要遵循CGLIB的规范, 通过`DynamicAdvisedInterceptor`实现回调
+
+### AdvisedSupport
+`AdvisedSupport`实现了对`Advice`的配置信息, 以及`Advisor`进行管理
+
+### DefaultAdvisorChainFactory
+该类会根据`target`以及`method`从`AdvisedSupport`匹配能够使用的`Interceptor`列表, 并方便回调`Interceptor`
+
+### DefaultAdvisorAdapterRegistry
+该类主要做了一下三个事情
+- 维护`BeforeAdvice`,`AfterAdvice`,`ThrowAdvice`的对应的`Adapter`的类
+- 通过`wrap`方法将`Advice`包装成为`Advisor`对象
+- 通过`Advisor`提供对应的`Interceptor`
+
+### 实现
+在Spring AOP中， 通过`MethodBeforeAdviceInterceptor`,`AfterReturningAdviceInterceptor`,`ThrowsAdviceInterceptor`来做具体的`Interceptor`的实现, 具体可以查看对应的源码
+
+### 调用Interceptor
+在`Spring AOP`中, 主要通过`MethodInvocation`完成对拦截器以及目标方法的调用，在`JdkDynamicAopProxy`和`Cglib2AopProxy`中, 都是通过`ReflectiveMethodInvocation`的`process()`方法完成对应拦截器链的调用。
+
+> NOTE: 如何完成对拦截器链的调用? 1. 如果没有匹配到对应的方法拦截器, 则递归调用  2. 通过Interceptor的invoke方法, 在完成对应的Advice方法的时候, 则会继续调用MethodInvocation的process方法, 完成递归。
+
+
+# ProxyFactory 方式实现AOP
+ProxyFactory的实现方式, 与`ProxyFactoryBean`的实现方式很类似, 都是·`ProxyCreatorSupport`的子类, 都是以`getProxy`作为入口, 因此具体的调用和实现方式都类似, 都是`getAopProxyFactory().createAopProxy(AdvisedSupport)`来进行创建`AopProxy`
