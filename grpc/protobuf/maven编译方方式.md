@@ -1,0 +1,32 @@
+# .proto文件的maven的编译方式
+```xml
+<build>
+  <extensions>
+    <extension>
+      <groupId>kr.motd.maven</groupId>
+      <artifactId>os-maven-plugin</artifactId>
+      <version>1.5.0.Final</version>
+    </extension>
+  </extensions>
+  <plugins>
+    <plugin>
+      <groupId>org.xolstice.maven.plugins</groupId>
+      <artifactId>protobuf-maven-plugin</artifactId>
+      <version>0.5.1</version>
+      <configuration>
+        <protocArtifact>com.google.protobuf:protoc:3.5.1-1:exe:${os.detected.classifier}</protocArtifact>
+        <pluginId>grpc-java</pluginId>
+        <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.17.1:exe:${os.detected.classifier}</pluginArtifact>
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>compile</goal>
+            <goal>compile-custom</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+```
