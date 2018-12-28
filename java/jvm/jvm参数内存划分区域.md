@@ -51,4 +51,3 @@
 
 + 并发收集器设置
   - -XX:+CMSIncrementalMode : 设置为增量模式, `适合于单CPU模式`
-  - 
