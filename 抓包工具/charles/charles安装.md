@@ -18,6 +18,7 @@
 
 2. proxy -> SSL proxy setting
 ![ssl proxy setting](../../img/charles_ssl_proxy_setting.png)
+该处为必须要配置的, 这里需要配置为你需要抓包的域名, 否则不能正常的抓包哦，可以按照我这样去配置.
 
 3. Help -> ssl proxying -> install charles Root Certificate
 该步骤主要用于在window中安装证书, 用于对https加解密进行使用
