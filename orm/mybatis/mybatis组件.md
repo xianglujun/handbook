@@ -12,6 +12,12 @@
 4. `SQL Mapper`
 由java接口和XML构成, 形成映射关系。
 
+## SqlSessionFactory的创建方式
+1. 通过XML配置的方式创建SqlSessionFactory
+2. 通过代码的方式创建SqlSessionFactory
+
+对于代码而言，要尽量避免通过代码的方式创建, 主要是为了便于维护, 以及后期对相关配置的修改。
+
 
 ## SqlSession的作用
 1. 通过命名空间以及方法名称定为需要执行的SQL语句, 发送给数据执行SQL并获取返回结果。
