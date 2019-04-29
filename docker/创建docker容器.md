@@ -21,10 +21,11 @@ docker push username/repository:tag            # Upload tagged image to registry
 docker run username/repository:tag                   # Run image from a registry
 ```
 
-1. 定义`Dockerfile`文件
+## docker的使用步骤
+### 1. 定义`Dockerfile`文件
 `Dockerfile`文件定义了容器内部的执行环境, 该文件定义了一些网络接口, 以及硬盘的驱动信息, 并且与当前的系统进行隔离. 因此需要制定一个端口号, 与外部系统进行映射。以及制定哪些文件会被拷贝进当前的环境之中。
 
-1.1 创建一个新的文件夹, 并且在该文件中创建`Dockerfile`文件。编辑并拷贝一下内容到文件之中
+#### 1.1 创建一个新的文件夹, 并且在该文件中创建`Dockerfile`文件。编辑并拷贝一下内容到文件之中
 ```docker
 # Use an official Python runtime as a parent image
 FROM python:2.7-slim
@@ -50,14 +51,14 @@ CMD ["python", "app.py"]
 `Dockerfile`文件指向了连个文件, 他们分别是`requirements.txt`和 `app.py`的文件
 
 
-2. 创建app
+### 2. 创建app
 在当前的问价中创建一下两个文件夹: `app.py`和`requirements.txt`文件. 其中会通过`app.py`通过http的方式对其进行访问。
-2.1 创建`requirements.txt`文件
+#### 2.1 创建`requirements.txt`文件
 ```docker
 Flask
 Redis
 ```
-2.2 创建`app.py`文件
+#### 2.2 创建`app.py`文件
 ```python
 from flask import Flask
 from redis import Redis, RedisError
@@ -85,14 +86,14 @@ if __name__ == "__main__":
     app.run(host='0.0.0.0', port=80)
 ```
 
-3. 构建`app`
-3.1 通过命令的方式常见一个`image`镜像文件
+### 3. 构建`app`
+#### 3.1 通过命令的方式常见一个`image`镜像文件
 > docker build -t friendlyhello
 
 当前的构建的镜像文件被构建到本地机器上的`repository`列表之中, 可以通过如下命令进行查看
 > docker image ls
 
-3.2 对于`linux`用户的问题解决:
+#### 3.2 对于`linux`用户的问题解决:
 - proxy server setting
 当容器启动起来之后, Proxy server 会阻塞web应用的链接, 如果`docker`工作在代理服务器之后, 需要在`Dockerfile`文件中配置一下内容
 > ENV http_proxy host:port
@@ -109,7 +110,7 @@ if __name__ == "__main__":
 sudo service docker restart
 ```
 
-4. 运行`app`
+### 4. 运行`app`
 ```sh
 docker run -p 4000:80 friendlyhello
 ```
@@ -123,7 +124,7 @@ curl http://localhost:4000
 ```
 > NOTE: 在window中, 通过`CTRL + C`并不能停止`docker`的运行, 而是要先通过`docker container ls`列出正在执行的容器, 并显式的通过`docker container stop <container Name Or Id>`进行停止。
 
-5. 在后台执行`app`
+### 5. 在后台执行`app`
 ```sh
 docker run -d -p 4000:80 friendlyhello
 ```
@@ -140,19 +141,19 @@ CONTAINER ID        IMAGE               COMMAND             CREATED
 docker container stop 1fa4ab2cf395
 ```
 
-6. 共享镜像
+### 6. 共享镜像
 共享镜像是通过将`image`文件上传到第三方的仓库, 方便其他人能够使用. 这里使用的是docker提供的仓库来实践
 
-6.1 创建docker 的仓库的账号
+#### 6.1 创建docker 的仓库的账号
 需要通过[仓库账号创建](https://hub.docker.com/r/19911212/xianglj1991/tags/)创建一个账号, 并同时需要创建自己的仓库的地址.
 
-6.2 通过docker登录
+#### 6.2 通过docker登录
 ```sh
 docker login
 ```
 这里这里需要我们输入`username`和`password`信息
 
-6.3 标记镜像文件(Tag the image)
+#### 6.3 标记镜像文件(Tag the image)
 标记是通过一个注册的名称将本地的镜像进行关联, 具体格式为`username/repository:tag`， 其中的`tag`是一个可选的参数, 但是建议加上. 建议在进行命名的时候, 命令一些有意义的名称.
 
 `docker`将通过`username`、`repository`,`tag`来标记当前的`image`应该上传都哪一个仓库下, 具体命令如下:
@@ -178,14 +179,24 @@ python                    2.7-slim            804b0a01ea83        2 days ago    
 hello-world               latest              4ab4c602aa5e        5 weeks ago         1.84kB
 ```
 
-6.4 发布镜像(publish image)
+#### 6.4 发布镜像(publish image)
 ```sh
 docker publis username/repository:tag
 ```
 
 当上面的命令执行完成之后, 那么发布镜像就完成了. 可以在自己的`repository`后台看到自己的发布的镜像文件
 
-6.5 获取并执行image镜像
+#### 6.5 获取并执行image镜像
 ```sh
 docker run -p 4000:80 username/repository:tag
+```
+
+#### 6.6 后台运行镜像
+```sh
+docker run -d -p 4000:80 username/repository:tag
+```
+
+#### 6.7 查看运行的容器列表
+```sh
+docker container ls
 ```
