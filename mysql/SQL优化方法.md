@@ -8,3 +8,24 @@
 - 多表链接的字段上要建立索引
   - 如果使用外键, 在mysql中，外键默认是有索引的
 - where条件上不要使用运算函数, 以免索引失效
+
+# 对于sql优化的一些总结
+- mysql嵌套子查询效率确实比较低
+- 可以将其优化成连接查询
+- 连接表时, 可以先用where条件对其表进行过滤, 然后做表连接
+- 建立适合的索引, 必要时建立多列联合索引
+- 学会分析sql执行计划, mysql会对sql进行优化， 所以分析执行计划很重要
+
+# SQL 执行顺序
+```SQL
+(8)SELECT (9)DISTINCT <select_list>
+(1)FROM <left_table>
+(3)<join_type>JOIN <right_table>
+(2)ON <join_condition>
+(4)WHERE <where_condition>
+(5)GROUP_BY<group_by_list>
+(6)WITH {CUBE|ROLLUP}
+(7)HAVING <having_condition>
+(10)ORDER BY <order_by_list>
+(11)LIMIT <limit_number>
+```
