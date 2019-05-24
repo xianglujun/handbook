@@ -1,22 +1,22 @@
 # mysql分页查询方法及其优化
 ## 方法一
-语句样式: mysql中，可用如下方法： select * from 表名称 limit offset, pagesize
+语句样式: mysql中，可用如下方法： `select * from 表名称 limit offset, pagesize`
 使用场景: 适用于数据量较少时的情况(元祖百/千级)
 原因/缺点: 全表扫描, 速度会很慢，且有的数据库结果集返回不稳定. limit限制的是从结果集的M位置处取N条输出，其余抛弃
 
 ## 建立主键或唯一索引，利用索引
-语句样式: mysql中，可用如下方法: select * from 表名称 where id_pk > (pageNum * pageSize) LIMIT pagesize
+语句样式: mysql中，可用如下方法: `select * from 表名称 where id_pk > (pageNum * pageSize) LIMIT pagesize`
 使用场景: 适用于数据量多的情况(元祖数上万)
 原因: 索引扫描, 速度会很快
 
 ## 基于索引在排序
-语句样式: mysql中，可用如下方法： select * from 表名称 where id_pk > (pageNum*pageSize) Order by id_pk asc limit pageSize
+语句样式: mysql中，可用如下方法： `select * from 表名称 where id_pk > (pageNum*pageSize) Order by id_pk asc limit pageSize`
 使用场景: 适用于数据量多的情况. 最好ORDER BY 后的列对象是`主键或唯一索引`, 使得 order by 操作利用索引被消除 单结果集是稳定的
 原因: 索引扫描， 速度很快. 但Mysql的排序操作，`只有ASC，没有DESC`
 
 ## 基于索引使用`prepare`
 _第一个问号表示pageNum, 第二?表示每页数据量_
-语句样式: mysql中, 可用如下方法: prepare stmt_name from select * from 表名称 where id_pk > (? * ?) order by id_pk asc limit pagesize
+语句样式: mysql中, 可用如下方法: `prepare stmt_name from 'select * from 表名称 where id_pk > (? * ?) order by id_pk asc limit pagesize`'
 使用场景: 大数据量
 原因: 索引扫描，速度会很快, prepare 语句又比一般的查询快一点
 
