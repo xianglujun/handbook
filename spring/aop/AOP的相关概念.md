@@ -24,7 +24,7 @@ Advice作为通知, 定义了在切入点应该做什么,  为切面提供织入
 ![AopProxy创建序列图](../../img/spring/create_aop_proxy.png)
 
 在Spring中, AOP一共有两个实现方式
-- JdkDynamicAopProxy : 当别代理的对象是一个接口的时候, 采用这种方式
+- JdkDynamicAopProxy : 当被代理的对象是一个接口的时候, 采用这种方式
 - Cglib2AopProxy: Cglib的方式, 除开接口意外的代理方式(会通过加载`net.sf.cglib.proxy.Enhancer`判断是否在CLASSPATH中引入了对应的包)
 - 关于AOP的所有的配置, 都是存放在`AdvisedSupport`的类中
 
