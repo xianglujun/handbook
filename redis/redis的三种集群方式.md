@@ -31,7 +31,7 @@
 (2) 主服务器出现故障时自动将从服务器转换为主服务器
 
 ### 哨兵的工作方式
-- 每个Sentinel(哨兵)进程已每秒钟一次的频率想整个集群中的Master主服务器, Slave从服务器以及其他Sentinel(哨兵)进程发送Ping 命令
+- 每个Sentinel(哨兵)进程已每秒钟一次的频率想向个集群中的Master主服务器, Slave从服务器以及其他Sentinel(哨兵)进程发送Ping 命令
 - 如果一个实例(instance)距离最后一次有效回复PING命令的时间超过`down-after-milliseconds`选项所指定的值, 则这个实例会被Sentinel(哨兵)进程标记为`主观下线(SDOWN)`
 - 如果一个Master主服务器被标记为主观下线（SDOWN）, 则正在监视这个Master主服务器的所有Sentinel进程要以每秒一次的频率确认Master主服务器的确进入了主观下线状态
 - 当有足够数量的Sentinel进程(大于等于配置文件指定的值)在指定时间范围内确认Master主服务器进入了主观下线状态(SDOWN), 则Master主服务器会被标记为可观下线(ODOWN)
