@@ -42,7 +42,7 @@ public boolean isPrefix(String prefix) {
     - 中间: == d
     - 右子树: > d
     - 搜索时间, 还是与单词的长度成正比
-![三分树](../../img/数据结构/TST.png)
+![三分树](../../img/数据结构/TST.ptgggggggggggggggggggggggggggggggggggggbng)
 
 
 ## 字符串模式识别
