@@ -36,3 +36,33 @@ systemctl restart iptables.services
 ```sh
 systemctl enable iptables.services
 ```
+
+5. 查看端口是否开放
+```sh
+firewalld-cmd --query-port=8080/tcp
+# 开放80端口
+firewall-cmd --permanent --add-port=80/tcp
+firewall-cmd --permanent --add-port=8080-8085/tcp
+# 移除端口
+firewall-cmd --permanent --remove-port=8080/tcp
+
+#查看防火墙的开放的端口
+firewall-cmd --permanent --list-ports
+```
+
+6. 查看防火墙规则
+```sh
+firewall-cmd --list-all
+```
+
+7. 添加服务器到防火墙
+```sh
+# 查看开启的服务
+firewall-cmd --list-services
+
+# 添加服务器
+firewall-cmd --permanent --add-service=redis
+
+# 查看服务器列表
+firewall-cmd --get-services
+```
