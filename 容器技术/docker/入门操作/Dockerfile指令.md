@@ -177,7 +177,7 @@ ARG webapp_user=user
 - 不能在`ONBUILD`指令中执行的指令
   - FROM
   - MAINTAINER
-  - ONBUILD 
+  - ONBUILD
 
 ```sh
 ONBUILD ADD . /app/src
