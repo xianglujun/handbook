@@ -25,6 +25,104 @@ Service的服务进程目前都是基于Socket通信方式对外提供服务, �
 - 每个Pod里运行着一个特殊的被称之为`Pause的容器`, 其他容器则为业务容器, `这些业务容器共享Pause容器的网络栈和Volume挂载卷`。因此他们之间的通信和数据交换更为高效，在设计师我们可以充分利用这一特性将一组密切相关的服务进程放到同一个POD中。
 - 并不是每个Pod和它里面运行的容器都能映射到一个Service上, 只有那些提供服务的一组Pod才会被映射成一个服务。
 
+### Pause容器作用
+- 用于判断整个状态, Pause容器与业务无关，这样便于判断整个Pod模块的存在与消亡状态
+- Pod里的多个业务容器共享Pause的IP, 共享Pause容器挂接的Volume， 简化了密切关联的业务容器之间的通信问题, 也很好地解决了他们之间的文件共享问题。
+
+### Pod IP
+K8S为每个Pod都分配了唯一的IP地址, 称之为PodIp, 一个Pod里的多个容器共享Pod IP地址.
+
+### Pod 分类
+- 普通POD
+  - 一旦被创建,就会被放在etcd中存储,随后会被k8s master 调度到某个具体的Node上并进行绑定
+  - 随后该Pod被对应的Node上的kubelet进程实例化成一组相关的Docker容器并启动起来。
+  - 在默认情况下, 当Pod里的某个容器停止, k8s会自动重新启动这个Pod(重启Pod里的所有的容器)
+  - 如果所在的Node宕机, 则会将这个Node上的所有Pod重新调度到其他节点上
+- 静态Pod
+  - 并不存在K8S的etcd存储里, 而是存放在某个具体的Node上的一个具体文件里, 并且只在此Node上运行启动
+
+### Pod资源配额
+- 在k8s里, 通常以千分之一的CPU配额为最小单位, 用`m`来表示, 通常一个容器的CPU配额定义为100~300m, 即占用0.1~0.3个CPU
+- Memory配额也是一个绝对值, 它的单位是内存字节数.
+
+### 资源配额设定
+在k8s里, 一个计算资源进行配额限定需要设定一下两个参数:
+- Requests: 该资源的最小申请量, 系统必须满足要求
+- Limits: 该资源最大允许使用的量, 不能被突破, 当容器视图使用超过这个量的资源时, 可能会被Kubernetes Kill 并重启
+
+## Label(标签)
+Label是Kubernetes系统中另一个核心概念. 一个Label是一个key=value的键值对，其中key与value由用户自己指定。
+
+可以通过给指定的资源对象捆绑一个或多个不同的Label来实现多维度的资源分组管理功能, 以便于灵活, 方便地进行资源分配、调度、配置、部署等管理工作。
+
+- 标签给某个资源对象定义Label，就相当于给它打了一个标签, 随后可以通过Label Selector(标签选择器)查询和筛选拥有某些Label的资源对象。
+
+### Label Selector
+- 基于等式的(Equality-based)
+  - name = redis-slave: 匹配所有具有标签 name = redis-slave的资源对象
+  - env != production: 匹配所有不具有标签env=production的资源对象
+- 基于集合的(Set-based)
+  - name in (redis-slave, redis-master): 匹配所有具有标签name=redis-master 或者name=redis-slave资源对象
+  - name not in (php-frontend): 匹配所有不具有标签name=php-frontend的资源对象.
+
+> Note: Label Selector 表达式的组合实现复杂的条件选择, 多个表达式之间用","进行分割即可, 几个条件之间是"AND"关系。
+
+### 应用场景：
+- kube-controller 进程通过资源对象RC上定义的Label Selector 来筛选要监控的Pod副本的数量, 从而实现Pod副本的数量始终复核预期设定的全自动控制流程。
+- kube0proxy 进程通过Service的Label Selector 来选择对应的Pod, 自动建立起每个Service到对应Pod的请求转发路由表, 从而实现Service的只能负载均衡机制。
+- 通过对某些Node定义Label, 并且在Pod定义文件中使用NodeSelector这种标签调度策略, kube-scheduler进程就可以实现Pod`定向调度`的特性。
+
+> NOTE: 使用Label可以给对象创建多组标签, Label和Label Selector 共同构建成了Kubernetes系统中最核心的应用模型, 使得被管理对象能够被惊喜地分组管理，同时实现了整个集群的高可用性。
+
+## Replication controller
+RC是Kubernetes 系统中最核心概念之一， 他定义了一个期望的场景，即声明某种Pod的副本数量在任意时刻都符合某个预期值, 所以RC的定义包含如下几个部门：
+- Pod期待的副本数(replicas)
+- 用于筛选目标Pod的Label Selector
+- 当Pod的副本数量小于预期数量时, 用于创建新Pod的Pod模板(template)
+
+> NOTE: 删除RC并不会影响通过该RC已经创建好的Pod. 为了删除所有的Pod, 可以设置`replicas`的值为0， 然后更新该RC.
+
+### Replicas Set
+由于Replication Controller 和Kubernetes 代码中的模块Replications Controller 同名, 同时这个词无法表达本意, 所以在kuberntes v1.2时, 就被升级为————Relicas Set .
+
+- 与Replication Controller 区别:
+  - Replicas Set 支持基于集合的Label Selctor (Set-based selector)
+  - 而RC只支持基于等式的Label Selector (Equality-based selector)
+
+这使得Replicas Set 的功能更强。
+> NOTE: 当前我们很少单独使用Replicas Set， 它主要被Deployment这个更高层的资源对象所使用。从而形成一整套Pod创建，删除，更新的编排机制。
+
+### RC(Replicas Set)的特性与作用
+- 在大多数情况下, 我们通过定义一个RC实现Pod的创建过程及副本数量的自动控制
+- RC里包括完整的Pod定义模板
+- Rc通过Label Selector 机制实现对Pod副本的自动控制
+- 通过改变RC里的Pod副本数量, 可以实现Pod的扩容或缩容功能
+- 通过改变RC里Pod模板的镜像版本，可以实现Pod的滚动升级功能。
+
+## Deployment
+Deployment 是k8s v1.2引入的概念， 引入的目的是为了更好地解决Pod的编排问题。 Deployment 在内部使用了Replica Set 来实现。
+
+Deployment 相对于RC的一个最大升级是我们随时知道当前Pod部署的进度。实际上由于一个Pod的创建、调度、绑定节点及在目标Node上启动对应的容器这一晚这也难怪的过程需要一定的时间，所以我们期待系统启动N个Pod副本的目标状态, 实际上是一个连续变化"部署过程"导致的最终状态。
+
+### Demployment 使用场景
+- 创建一个Deployment对象来生成对应的Replica Set并完成Pod的创建过程
+- 检查Demployment 的状态来看部署动作是否完成(Pod副本的数量是否达到预期的值)
+- 更新Demployment已创建新的Pod(比如镜像升级)
+- 如果当前Demployment不稳定, 则回滚到一个早先的Demployment版本
+- 暂停Demployment以便于一次性修改多个PodTemplateSpec的配置项, 之后再回复Demployment进行新的发布
+- 扩展Demployment以对应高负载
+- 查看Demployment的状态, 以此作为发布是否成功的指标
+- 清理不再需要的旧版本ReplicatSet
+
+### 定义的变更
+Demployment定义与Replica Set 的定义很相似, 除了API声明与Kind类型等有所区别:
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+```
+
 ## Master-Slave
 在集群管理方面, Kubernetes将集群中的机器划分为`Master`节点和一群工作节点(`Node`). 其中, 在`Master`节点上运行着集群相关的一组进程`kube-apiserver`,`kube-controller-manager`,`kube-scheduler`. 这些进程实现了整个集群的资源管理,`Pod调度`,`弹性伸缩`,`安全控制`,`系统监控`和`纠错`等管理功能，并且是全自动完成的。
 
