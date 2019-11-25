@@ -60,7 +60,10 @@ Node节点才是Kubernetes集群中的工作负载节点, 每个Node都会被Mas
 - `kube-proxy`: 实现kubernetes Service 的通信与负载均衡机制的重要组件
 - `Docker Engine`: Docker引擎, 负责本机的容器创建和管理工作
 
+
+
 ### 工作原理
+
 - Node节点可以在运行期间动态增加到kubernetes集群中, 前提是每个节点已经正确安装、配置和运行了关键进程
 - 在默认情况下kubelet会想Master注册自己, 这也是kubernetes `推荐的Node管理方式`
 - Node被纳入集群管理范围, kubelet 进程就汇定时向Master节点汇报自身的情报, 例如`操作系统，docker版本，机器的CPU, 内存情况，以及当前哪些Pod在运行等`, 这样Master可以获知每个Node的资源使用情况, 并实现高效均衡的资源调度策略。
