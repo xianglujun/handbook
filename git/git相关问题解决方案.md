@@ -16,6 +16,6 @@ git config --global credential.helper store
 ## 查看当前项目的git配置信息
 
 ```sh
-git config --list
+git config --list 
 ```
- 
+
