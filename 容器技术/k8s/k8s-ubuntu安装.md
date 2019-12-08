@@ -47,7 +47,10 @@ systemctl restart docker
 
 ## 安装kubelet, kubectl, kubeadm
 ```sh
-# 添加秘钥
+# 安装依赖插件
+apt-get update && apt-get install -y apt-transport-https
+
+# 添加秘钥(对于不同的源要添加不同的密钥)
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
 
 # 添加软件源
@@ -58,6 +61,14 @@ EOF
 # 国内可通过该仓库安装
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb http://mirrors.ustc.edu.cn/kubernetes/apt kubernetes-xenial main
+EOF
+
+# 阿里云的安装仓库
+sudo curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add - 
+
+# 设置仓库地址
+sudo cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
 EOF
 
 # 执行安装
@@ -98,8 +109,8 @@ docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver:v
 ### 重新tag以上镜像
 ```sh
  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager:v1.16.2 k8s.gcr.io/kube-controller-manager:v1.16.2
-docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler:v1.13.2 k8s.gcr.io/kube-scheduler:v1.16.2
-docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy:v1.13.2 k8s.gcr.io/kube-proxy:v1.16.2
+docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler:v1.16.2 k8s.gcr.io/kube-scheduler:v1.16.2
+docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy:v1.16.2 k8s.gcr.io/kube-proxy:v1.16.2
 docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.1 k8s.gcr.io/pause:3.1
 docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/etcd:3.3.15-0 k8s.gcr.io/etcd:3.3.15-0
 docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.6.2 k8s.gcr.io/coredns:1.6.2

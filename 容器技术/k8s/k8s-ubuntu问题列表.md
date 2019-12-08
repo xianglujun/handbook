@@ -14,7 +14,7 @@ kubectl describe pod kube-flannel-ds-amd64-hk5sn  --namespace=kube-system
 ```
 ## 解决办法
 ```sh
-# 安装网络空间进行pod通信
+# 安装网络控件进行pod通信
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 ```
 
