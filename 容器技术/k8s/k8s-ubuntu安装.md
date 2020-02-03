@@ -133,3 +133,4 @@ kubeadm join 10.2.14.78:6443 --token h7u22o.nk23ias5f1ft8hj9 --discovery-token-c
 ```
 
 ## 问题列表
+
