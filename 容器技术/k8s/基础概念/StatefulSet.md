@@ -17,3 +17,46 @@
 
 ## StatefulSet 核心功能
 
+`就是按照某种方式记录这些状态，然后在Pod被重新创建时，能够为新Pod恢复这些状态`
+
+
+
+## Headless Service
+
+### 什么是Headless Service
+
+`Service`是Kubernetes项目中用来将一组Pod暴露给外界访问的一种机制。例如，一个`Deployment`有3个Pod，那么我就可以定义一个Service，然后用户只要能访问到这个Service, 他就能访问具体的Pod.
+
+### Service访问方式
+
+- 以Service 的`VIP`(Virtual IP 即: 虚拟IP)方式。(`Normal Service 处理方式`)
+  - 例如: 当我访问10.0.23.1这个Service的IP地址时，10.0.23.1其实就是一个VIP, 他会把请求转发到该Service所代理的某个Pod上。
+  - 访问`my-svc.my-namespace.svc.cluster.local`解析到的，正是my-svc这个Service的VIP
+- 以Service的`DNS`方式 (`Headless Service 处理方式`)
+  - 例如: 只要我访问`my-svc.my-namespace.svc.cluster.local`这条DNS, 就可以访问到`my-svc`的Service所代理的某一个Pod
+  - 这种情况下，你访问`my-svc.my-namespace.svc.cluster.local`解析到的，直接就是 my-svc 代理的某一个 Pod 的 IP 地址
+
+> 两者区别在于，`Headless Service`不需要分配一个VIP， 而是可以直接以DNS记录的方式解析出被代理Pod的IP地址
+
+### Headleass Service 创建
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  ports:
+  - port: 80
+    name: web
+  clusterIP: None
+  selector:
+    app: nginx
+```
+
+> 所谓`Headless Service`，其实仍是一个标准Service的YAML文件，只不过，它的`clusterIP`字段的值时`None`
+
+
+
