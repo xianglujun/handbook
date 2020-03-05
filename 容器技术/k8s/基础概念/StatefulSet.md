@@ -137,3 +137,26 @@ kubectl run -i --tty --image busybox:1.28.4 dns-test --restart=Never --rm /bin/s
 nslookup web-0
 ```
 
+> 注意: 在StatefulSet使用中，如果希望能够解析DNS, 需要启动`Headless Service`以及`StatefulSet`两个对象，否则在解析`nslookup`是，可能出现`nslookup: can't resolve 'web-0.nginx'`
+
+### Stateful 执行原理
+
+当我们尝试将`有状态应用`的Pod删除掉的时候:
+
+```sh
+kubectl delete pod -l app=nginx
+```
+
+可以看到，当我们把两个Pod删除之后，Kubernetes会按照原先编号的顺序，创建出了两个新的Pod。并且，Kubernetes依然为他们分配了与原来相同的`网络身份`.`web-0.ngixn`和`web-1.nginx`
+
+通过这种严格的对应规则，***`StatefulSet就保证了Pod网络标识的稳定性`***
+
+
+
+通过这种方式, `Kubernetes就成功地将Pod的拓扑状态(比如: 哪个节点先启动，哪个节点后启动)，按照Pod的"名字+编号"的方式固定了下来`, 同事还为每一个Pod提供了一个固定并且唯一的访问入口：`即这个Pod对应的DNS记录`
+
+这些状态，在`StatefulSet`的整个生命周期里都会保持不变，绝不会因为对应Pod的删除或者重新创建而失效。
+
+
+
+> NOTE: 尽管`web-0.nginx`这条记录本身不会变，但它解析到的Pod的IP地址，并不是固定的。
