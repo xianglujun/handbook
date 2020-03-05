@@ -1,33 +1,19 @@
 # StatefulSet
 
-在k8s系统中, Pod的管理对象RC, Deployment, DaemonSet 和 Job都是面向无状态的服务。但现实中有很多服务是有状态的， 特别是一些复杂的中间件集群。这些中间件集群有以下一些共同点:
+## 设计思想
 
-- 每个节点都有固定的身份ID， 通过这个ID， 集群中的成员可以相互发现并且通信
-- 集群的规模是比较固定的，集群规模不能随意变动
-- 集群里的每个节点都是有状态的, 通常会持久化数据到永久存储中
-- 如果磁盘损坏， 则集群里的某个节点无法正常运行, 集群功能受损
+得益于`控制器模式`的设计思想，Kubernetes项目很早就在Deployment基础上，扩展出了对`有状态应用`的初步支持。这个编排功能，就是`StatefulSet`
 
 
 
-## StatefulSet的特性
+`StatefulSet`的设计思想其实非常容器理解，它把真实世界里的应用状态，抽象为两种情况：
 
-- StatefulSet 里的每个Pod都有稳定唯一的网络标识, 可以用来发现集群内的其他成员。
-- StatefulSet 控制的Pod副本的启停顺序是受控的。操作第n个Pod时, 前 n-1个Pod已经是运行且准备好的状态
-- StatefulSet 里的Pod采用稳定的持久化存储券, 通过_PV/PVC_来实现，删除Pod时默认不会删除与StatefulSet相关的存储卷
+- `拓扑状态`: 这种情况意味着，应用的多个实例之间不是完全对等的关系。
+  - 这些应用实例，必须按照某些顺序启动，比如应用的主节点A要先于从节点B启动。而如果你把A和B两个Pod删除，他们再次被创建出来时也必须严格哪找这个顺序启动才行。
+  - 新创建出来的Pod, 必须和原来的Pod的网络标识一样，这样原先的访问者才能使用同样的方法，访问到这个新Pod
+- `存储状态`: 这种情况以为这多个实例分别绑定了不同的存储数据。
+  - 对于这些应用实例来说，Pod A第一次读取到的数据，和隔了十几分钟之后再次读取到的数据，应该是同一份, 那怕Pod A被重新创建过
+  - 最典型例子，就是一个数据库应用的额多个存储实例
 
-## Headless Service
-
-StatefulSet 除了要与PV卷捆绑使用以存储Pod的状态数据, 还要与Headless Service配合使用，即在每个StatefulSet 的定义中要声明它属于哪个_Headless Service_.
-
-
-
-_Headless Service_与普通Service的区别在于，它没有_ClusterIp_, 如果解析Headless Service的DNS域名, 则返回的是该Service对应的全部Pod的Endpoint列表. 
-
-
-
-_StatefulSet Service_在_Headless Service_的基础上又为_StatefulSet_控制的每个Pod实例创建一个DNS域名, 这个域名格式为：
-
-```kubernetes
-${podname}:${headless service name}
-```
+## StatefulSet 核心功能
 
