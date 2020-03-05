@@ -56,7 +56,84 @@ spec:
     app: nginx
 ```
 
-> 所谓`Headless Service`，其实仍是一个标准Service的YAML文件，只不过，它的`clusterIP`字段的值时`None`
+> 所谓`Headless Service`，其实仍是一个标准Service的YAML文件，只不过，它的`clusterIP`字段的值时`None`. 所以这个Service被创建后并不会被分配到一个VIP。而是以DNS记录的方式暴露出锁代理的Pod
 
+### 如何关联Pod
 
+而它所代理的Pod, 依然采用`Label Selector`机制选择出来。然后通过`selector`与Pod进行关联。
+
+当你按照这样的方式创建了一个`Headless Service`之后，它所代理的所有Pod的IP地址，都会被绑定一个这样格式的DNS记录
+
+```txt
+<pod-name>.<svc-name>.<namespace>.svc.cluster.local
+```
+
+这个DNS记录，正式Kubernetes项目为Pod分配的唯一的`可解析身份`
+
+## StatefulSet 通过DNS维持Pod拓扑状态
+
+### 创建StatefulSet
+
+```yaml
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+spec:
+  serviceName: "nginx"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.9.1
+        ports:
+        - containerPort: 80
+          name: web
+```
+
+- `serviceName=nginx`: 该字段就是为了告诉`StatefulSet`控制器，在执行控制循环的时候，请使用这个`Headless Service`来保证Pod的`可解析身份`.
+
+当通过`kubectl create `的方式创建了上面这个`Service`和`StatefulSet`之后，就就汇看到如下两个对象：
+
+```shell
+# 创建Headless Service
+kubectl create -f svc.yaml
+kubectl get service nginx
+
+# 创建并查看statefulset
+kubectl create -f statefulset.yaml
+kubectl get statefulset web
+
+# 监控Pod的执行状态
+kubectl get pods -w -l app=nginx
+```
+
+通过上面这个Pod的创建过程，可以看出，`StatefulSet`给它所管理的所有Pod的名字，进行了编号，编号规则是：`-`
+
+而且这些编号都是从0开始累加，与StatefulSet的每个Pod实例一一对应, 绝不重复。
+
+### 查看`hostname`
+
+```sh
+kubectl exec web-0 -- sh -c 'hostname'
+
+kubectl exec web-0 --sh -c 'hostname'
+```
+
+### 验证解析规则是否正确
+
+```sh
+kubectl run -i --tty --image busybox:1.28.4 dns-test --restart=Never --rm /bin/sh
+
+## 进入容器后，通过nslookup查看
+nslookup web-0
+```
 
