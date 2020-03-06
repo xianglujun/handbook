@@ -160,3 +160,63 @@ kubectl delete pod -l app=nginx
 
 
 > NOTE: 尽管`web-0.nginx`这条记录本身不会变，但它解析到的Pod的IP地址，并不是固定的。
+
+
+
+## 存储状态
+
+`StatefulSet`对存储状态的管理机制, 主要使用`Persistent Volume Claim`功能实现。
+
+
+
+### Persistent Volume Claim(PVC) 和 Persistent Volume(PV)
+
+这种声明Volume的方式，降低了用户声明和使用持久化Volume的门槛。
+
+**第一步: 定义PVC, 声明想要的Volume属性**
+
+```yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pv-claim
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+```
+
+> 在这个声明之中， storage:1Gi 表示这个Volume大小至少是1GiB.
+>
+> `accessModes: ReadWriteOnce` 表示这个Volume的关在方式是可读写，并且只能被挂载在一个节点上而非多个共享节点。
+
+**第二步: 在应用Pod中，声明使用这个PVC**
+
+```yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pv-pod
+spec:
+  containers:
+    - name: pv-container
+      image: nginx
+      ports:
+        - containerPort: 80
+          name: "http-server"
+      volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: pv-storage
+  volumes:
+    - name: pv-storage
+      persistentVolumeClaim:
+        claimName: pv-claim
+```
+
+
+
+
+
