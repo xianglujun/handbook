@@ -293,7 +293,21 @@ spec:
 
 
 
+这个自动创建的PVC, 与PV绑定成功之后，就会进入Bound状态，这就意味着这个Pod可以挂在使用这个PV了。
 
 
 
+> **`PVC其实就是一种特殊的Volume`, 只不过一个PVC具体是什么类型的Volume，要在跟某个PV绑定之后才知道**
 
+
+
+## 工作原理
+
+1. StatefulSet的控制器直接管理的是Pod. 
+
+这是因为，StatefulSet里的不同Pod势力，不再像ReplicaSet中那样都是完全一样的，而是有了细微的区别。比如，每个Pod的hasname, 名字等都是不同的，携带了编号的。而StatefulSet区分这些实例的方式，就是通过在Pod的名字里加上事先约定的编号。
+
+2. Kubernetes通过Headless Service，为这些有编号的Pod，在DNS服务器中生成带有同样编号的DNS记录。
+3. `StatefulSet`还为每一个Pod分配并创建一个同样编号的`PVC`
+
+这样, Kubernetes就可以通过`Persistent Volume`机制为这个`PVC`绑定上对应的`PV`, 从而保证了每一个Pod都拥有独立的`Volume`.
