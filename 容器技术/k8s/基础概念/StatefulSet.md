@@ -216,6 +216,83 @@ spec:
         claimName: pv-claim
 ```
 
+#### PV对象
+
+```yaml
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv-volume
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 10Gi
+  rbd:
+    monitors:
+    - '10.16.154.78:6789'
+    - '10.16.154.82:6789'
+    - '10.16.154.83:6789'
+    pool: kube
+    image: foo
+    fsType: ext4
+    readOnly: true
+    user: admin
+    keyring: /etc/ceph/keyring
+    imageformat: "2"
+    imagefeatures: "layering"
+```
+
+对比`PVC`和`PV`两个对象，我们可以理解为`PVC`只是对Volume进行了声明，而具体使用哪一个Volume，则是需要由`PV`来定义。这就好比`接口和实现`的思想。
+
+也正是因为`PVC`和`PV`两个对象的存在，使得`StatefulSet`的存储状态成为可能。
+
+
+
+### 具体实例
+
+```yml
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+spec:
+  serviceName: "nginx"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.9.1
+        ports:
+        - containerPort: 80
+          name: web
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+```
+
+该StatefulSet额外添加了一个`volumeClaimTemplates`字段。方式被这个`Stateful`管理的Pod, 都会声明一个对应的`PVC`；而这个`PVC`的定义，就来自于`volumeClaimTemplates`这个模板字段。
+
+
+
 
 
 
