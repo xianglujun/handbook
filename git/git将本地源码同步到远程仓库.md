@@ -30,3 +30,16 @@ git remote add origin '远程地址'
 git push -u origin master
 ``````
 
+
+
+## 冲突解决
+
+1. 可以采用`git merge master`的方式合并冲突
+
+2. `fatal: refusing to merge unrelated histories`
+
+   ```sh
+   git pull origin master --allow-unrelated-histories
+   ```
+
+   
