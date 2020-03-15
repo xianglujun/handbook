@@ -58,3 +58,64 @@
 
 ## 实例化Spring Bean
 
+- Bean实例化
+  - 常规方式
+    - 通过构造器(配置元信息: XML, Java注解和Java API)
+    - 通过静态工厂方法(配置元信息: XML和Java API)
+    - 通过Bean工厂方法(配置元信息： XML和Java API)
+    - 通过FactoryBean(配置元信息: XML, Java注解和Java API)
+  - 特殊方式
+    - 通过`ServiceLoaderFactoryBean`(配置元信息: XML, Java注解和Java API)
+    - 通过`AutowireCapableBeanFactory#createBean(Class, int, boolean)`
+    - 通过`BeanDefinitionRegistry#regsiterBeanDefinition(String, BeanDefinition)`
+
+## 初始化Spring Bean
+
+- Bean 初始化(Initialization)
+  - `@PostConstruct` 标注方法
+  - 实现`InitializingBean`接口的`afterPropertiesSet()`方法
+  - 自定义初始化方法:
+    - XML配置: `<bean init-method="init">`
+    - Java注解: `@Bean(initMethod="init")`
+    - Java API: `AbstractBeanDefinition@setInitMethodName(String)`
+
+### 假设这三种方式在同一个BEAN中，执行顺序是什么?
+
+- `@PostConstruct`注解
+- `InitializingBean#afterPropertiesSet()`
+- 自定义初始化方法
+
+
+
+## 延迟初始化Spring Bean
+
+- Bean 延迟初始化(Lazy Initialization)
+  - XML配置: <bean lazy-init="true">
+  - Java注解：`@Lazy(true)`
+
+## 销毁Spring Bean
+
+- Bean销毁(Destroy)
+  - `@PreDestroy` 标注方法
+  - 实现`DesposableBean`接口的`destroy()`方法
+  - 自定义销毁方法
+    - XML配置`<bean destroy="destroy">`
+    - Java注解: `@Bean(desctroy="destroy")`
+    - Java API: `AbstractBeanDefinition#setDestroyMethodName(String)`
+
+## 垃圾回收Spring Bean
+
+- Bean 垃圾回收(GC)
+  - 关闭Spring容器(应用上下文)
+  - 执行GC
+  - Spring Bean覆盖`finalize()`方法被回调
+
+## 问题列表
+
+1. Spring如何注册一个Bean
+
+答: 主要用过`BeanDefinition`和`外部单体对象注册`
+
+2. 什么是Spring BeanDefinition?
+
+答: 管理JavaBean元数据信息
