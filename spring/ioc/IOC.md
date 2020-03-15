@@ -105,3 +105,61 @@
 - 注入类型
   - 实时注入
   - 延迟注入
+
+## Spring Bean对象来源
+
+- 自定义Bean
+- 容器内建Bean
+- 容器内建依赖
+
+## Spring 配置元信息
+
+- Bean 定义配置
+  - 给予XML配置
+  - 基于Properties配置
+  - 基于Java注解
+  - 基于Java API
+- IoC容器配置
+  - 基于XML配置
+  - 基于Java注解
+  - 基于Java API
+- 外部化属性配置
+  - 基于Java注解
+
+## BeanFactory 与 ApplicationContext 谁才是IoC容器
+
+- ApplicationContext就是BeanFactory (Is BeanFactory)
+  - 很方便的整合Spring AOP
+  - 消息源处理，用于国际化处理
+  - 消息发布机制
+  - 提供了应用层面的扩展，比如(WebApplicationContext)
+- BeanFactory是基础特性，ApplicationContext对BeanFactory的扩展。
+
+## Spring 应用上下文
+
+- 除了IoC容器角色，还提供了:
+  - 面向切面（AOP）
+  - 配置元信息(Configuration Metadata)
+  - 资源管理 (Resources)
+  - 事件 (Events)
+  - 国际化 (i18n)
+  - 注解 (Annotations)
+  - Environment抽象 (Environment Abstraction)
+
+## BeanFactory与ApplicationContext的使用场景
+
+- BeanFactory是Spring底层IoC容器
+- ApplicationContext 是BeanFactory的超集
+
+### BeanFactory与FactoryBean 的区别
+
+- BeanFactory是IoC的容器
+- `FactoryBean`是Spring容器创建Bean的一种方式
+
+
+
+## Spring IoC容器生命周期
+
+- 启动 
+- 运行
+- 停止
