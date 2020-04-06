@@ -10,7 +10,7 @@
 
 
 
-### 为节点大上污点
+### 为节点打上污点
 
 ```sh
 kubectl taint nodes node1 foo=bar:NoSchedule

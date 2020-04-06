@@ -2,7 +2,7 @@
 
 ```sh
 
-kubeadm config image list;
+kubeadm config images list;
 for i in `kubeadm config images list`; do 
   imageName=${i#k8s.gcr.io/}
   docker pull registry.aliyuncs.com/google_containers/$imageName
