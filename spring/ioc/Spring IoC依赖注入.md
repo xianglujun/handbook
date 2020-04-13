@@ -117,3 +117,20 @@
   - 集合类型(Collection)
     - Collection: List, Set(SortedSet, NavigableSet, EnumSet)
     - Map: Properties
+
+## 限定注入
+
+- 使用注解`@Qualifier`限定
+  - 通过Bean名称限定
+  - 通过分组限定
+- 基于`@Qualifier`扩展限定
+  - 自定义注解 - 如 spring cloud `@LoadBalanced`
+
+## 延迟注入
+
+- 使用`API ObjectFactory`延迟注入
+  - 单一类型
+  - 集合类型
+- 使用`API ObjectProvider` 延迟注入
+  - 单一类型
+  - 集合类型
