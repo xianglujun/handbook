@@ -49,3 +49,16 @@
     - 实例化策略 - InstantiationStrategy
   - 构造器依赖注入
 
+## Spring Bean实例化后阶段
+
+- Bean属性赋值(Poplulate)判断
+  - InstantiationAwareBeanPostProcessor#postProcessAfterInstantiation
+
+## Spring Bean 属性赋值前阶段
+
+- Bean属性元信息
+  - PropertyValues
+- Bean属性赋值前回调
+  - Spring 1.2 - 5.0: InstantiationAwareBeanPostProcessor#postProcessPropertyValues
+  - Spring 5.1 - InstantiationAwareBeanPostProcess#postProcessorProperties
+
