@@ -62,3 +62,45 @@
   - Spring 1.2 - 5.0: InstantiationAwareBeanPostProcessor#postProcessPropertyValues
   - Spring 5.1 - InstantiationAwareBeanPostProcess#postProcessorProperties
 
+## Spring Bean Aware 接口回调阶段
+
+- Spring Aware接口
+  - BeanNameAware
+  - BeanClassLoaderAware
+  - BeanFactoryAware
+  - `EnvironmentAware`
+  - `EmbeddedValueResolverAware`
+  - `ResourceLoaderAware`
+  - `ApplicationEventPublisherAware`
+  - `MessageSourceAware`
+  - `ApplicationContextAware`
+
+> 其中前三个为BeanFactory提供的Aware方法，后面为ApplicationContext提供的Aware
+
+## Spring Bean初始化前阶段
+
+- 方法回调
+  - BeanPostProcessor#postProcessBeforeInitialization
+
+## Spring Bean 初始化阶段
+
+- Bean初始化(Initialization)
+  - @PostConstruct 标注方法
+  - 实现InitializingBean 接口afterProperties方法
+  - 自定义初始化方法
+
+## Spring Bean 初始化阶段
+
+- 回调方法
+  - BeanPostProcessor#postProcessAfterInitialization
+
+## Spring Bean初始化完成阶段
+
+- 方法回调
+  - spring 4.1+: SmartInitializingSingleton#afterSingletonesInstantiated
+
+## Spring Bean 销毁前阶段
+
+- 方法回调
+  - DestructionAwareBeanPostProcessor#postProcessBeaforeDestruction
+
