@@ -104,3 +104,16 @@
 - 方法回调
   - DestructionAwareBeanPostProcessor#postProcessBeaforeDestruction
 
+## Spring Bean 销毁阶段
+
+- Bean销毁
+  - @PreDestroy标注方法
+  - 实现DisposableBean接口的destroy()方法
+  - 自定义销毁方法
+
+## Spring Bean垃圾搜集
+
+- Bean垃圾回收
+  - 关闭Spring容器
+  - 执行GC
+  - Spring Bean覆盖的finalize()方法被回调
