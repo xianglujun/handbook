@@ -71,5 +71,56 @@
   | (scope)     | 设置Bean中scope属性           |
   | ${n}        | n表示第n+1个构造器参数        |
 
-  
+  ## 基于Java注解装载Spring Bean配置元信息
 
+  - Spring模式注解
+
+    | Spring注解     | 场景说明          | 其实版本 |
+    | -------------- | ----------------- | -------- |
+    | @Repository    | 数据仓库模式注解  | 2.0      |
+    | @Component     | 通用组件模式注解  | 2.5      |
+    | @Service       | 服务模式注解      | 2.5      |
+    | @Controller    | Web控制器模式注解 | 2.5      |
+    | @Configuration | 配置类模式注解    | 3.0      |
+    |                |                   |          |
+
+  - Spring Bean依赖注入注解
+
+    | Spring注解 | 场景说明                           | 起始版本 |
+    | ---------- | ---------------------------------- | -------- |
+    | @Autowired | Bean依赖注入，支持多种依赖查找方式 | 2.5      |
+    | @Qualifier | 细粒度的@Autwoired依赖查找         | 2.5      |
+
+    | Java注解  | 场景说明         | 起始版本 |
+    | --------- | ---------------- | -------- |
+    | @Resource | 类似于@Autowired | 2.5      |
+    | @Inject   | 类似于@Autowired | 2.5      |
+
+  - Spring Bean条件装配注解
+
+    | Sring注解    | 场景说明       | 起始版本 |
+    | ------------ | -------------- | -------- |
+    | @Profile     | 配置化条件装配 | 3.1      |
+    | @Conditional | 编程条件装配   | 4.0      |
+
+  - Spring Bean声明周期回调
+
+    - @PostConstruct
+    - @PreDestroy
+
+## 基于Extensible XML authoring 扩展spring xml元素
+
+- Spring XML扩展
+  - 编写XML Schema文件： 定义XML结构
+  - 自定义`NamespaceHandler`实现： 命名空间绑定
+  - 自定义`BeanDefinitionParser`实现：XML元素与BeanDefinition解析
+  - 注册XML扩展: 命令空间与XML schema映射
+
+## 基于Properties资源装载外部化配置
+
+- 注解驱动
+  - @org.springframework.context.annotation.PropertySource
+  - @org.springframework.context.annotation.PropertySources
+- API编程
+  - org.springframework.core.env.PropertySource
+  - org.springframework.core.env.PropertySources
