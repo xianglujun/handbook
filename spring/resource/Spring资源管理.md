@@ -45,4 +45,29 @@
   | 默认           | sun.net.www.protocol.${protocol}.Handler                     |
   | 自定义         | 通过Java Properties java.protocol.handler.pkgs 指定实现类包名，现类名必须为`Handler`. 如果存在多个包名指定，通过分隔符`|` |
 
-  
+
+## Spring 资源接口
+
+- 资源接口
+
+| 类型       | 接口                                                |
+| ---------- | --------------------------------------------------- |
+| 输入流     | org.springframework.core.io.InputStreamSource       |
+| 只读资源   | org.springframework.core.io.Resource                |
+| 可写资源   | org.springframework.core.io.WritableResource        |
+| 编码资源   | org.springframework.core.io.support.EncodedResource |
+| 上下文资源 | org.springframework.core.io.ContextResource         |
+
+## Spring 内建Resource实现
+
+- 内建实现
+
+| 资源来源       | 资源协议      | 实现类                 |
+| -------------- | ------------- | ---------------------- |
+| Bean定义       | -             | BeanDefinitionResource |
+| 数组           | -             | ByteArrayResource      |
+| 类路径         | classpath:/   | ClassPathResource      |
+| 文件系统       | file:/        | FileSystemResource     |
+| URL            | URL支持的协议 | UrlResource            |
+| ServletContext | -             | ServletContextResource |
+
