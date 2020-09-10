@@ -71,3 +71,37 @@
 | URL            | URL支持的协议 | UrlResource            |
 | ServletContext | -             | ServletContextResource |
 
+## Spring Resource接口扩展
+
+- 可写资源接口
+  - WritableResource
+    - FileSystemResource
+    - FileUrlResource(`@since 5.0.2`)
+    - PathResource(`@since 4.0 & @Deprecated`)
+- 编码资源接口
+  - EncodedResource
+
+## Spring 资源加载器
+
+- Resource加载器
+  - ResourceLoader
+    - DefaultResourceLoader
+      - FileSystemResourceLoader
+      - ClassRelativeResourceLoader
+      - AbstractApplicationContext
+
+## Spring 统配路径资源加载器
+
+- 通配路径 ResourceLoader
+  - ResourcePatternResolver
+    - PathMatchingResourcePatternResolver
+- 路径匹配器
+  - PathMatcher
+    - AntPathMathcher - Ant模式匹配实现
+
+## 依赖注入Spring Resource
+
+- 基于@Value实现
+  - 如：
+    - `@Value("classpath:/...")`
+    - private Resource resource;
