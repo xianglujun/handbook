@@ -105,3 +105,19 @@
   - 如：
     - `@Value("classpath:/...")`
     - private Resource resource;
+
+## 依赖注入ResourceLoader
+
+- 方法一: 实现`ResourceLoaderAware`回调
+- 方法二: 实现`@Autowired`注入ResourceLoader
+- 方法三: 注入`ApplicationContext`作为ResourceLoader
+
+## Java标准资源管理扩展的步骤
+
+- 简易实现
+  - 实现`URLStreamHandler`并放置在`sun.net.protocol.${protocol}.Handler`包下
+- 自定义实现
+  - 实现`URLStreamHandler`
+  - 添加`-Djava.protocol.handler.pkgs`启动参数，执行`URLStreamHandler`实现类的包下
+- 高级实现
+  - 实现`URLStreamHandlerFactory`并传递到URL之中
