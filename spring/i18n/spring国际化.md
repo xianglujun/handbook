@@ -40,3 +40,26 @@
   - 缓存设计
   - 字符编码控制 - java.util.ResourceBundle.Control(@since 1.6)
   - Control SPI扩展: java.util.spi.ResourceBundleControlProvider(`@since 1.8`)
+
+### Java文本格式化
+
+- 核心接口
+  - MessageFormat
+- 基本用法
+  - 设置消息格式模式 = new MessageFormat(...)
+  - 格式化 - format(new Object[]{})
+- 消息格式模式
+  - 格式元素: {ArgumentIndex, (, FormatType, (FormatStyle))}
+  - `FormatType`: 消息格式类型，可选项: `number`, `date`, `time`, `choice`
+  - `FormatStyle`: 消息格式风格, 可选项包括: `short`, `medium`, `long`, `full`, `integer`, `currency`, `percent`
+- 高级特性
+  - 重置消息格式模式
+  - 重置 java.util.Locale
+  - 重置java.text.Format
+
+### MessageSource开箱即用实现
+
+- 基于ResourceBundle + MessageFormat 组合MessageSource实现
+  - `org.spring.framework.context.support.ResourceBundleMessageSource`
+- 可重载Properties + MessageFormat 组合MessageSource实现
+  - `org.springframework.context.support.ReloadableResourceBundleMessageSource`
