@@ -63,3 +63,22 @@
   - `org.spring.framework.context.support.ResourceBundleMessageSource`
 - 可重载Properties + MessageFormat 组合MessageSource实现
   - `org.springframework.context.support.ReloadableResourceBundleMessageSource`
+
+## MessageSource内建依赖
+
+- MessageSource内建Bean可能来源
+  - 预注册 Bean名称为：`messageSource`， 类型为`MessageSourceBean`
+  - 默认内建实现 - `DelegatingMessageSource`
+    - 层次性查找`MessageSource`对象
+
+- Spring Boot为什么要新建MessageSourceBean
+  - AbstractApplicationContext的实现决定改了MessageSource内建实现
+  - Spring Boot 通过外部化配置简化MessageSource Bean 构建
+  - Spring Boot基于Bean Validation 校验非常普遍
+
+## 如何实现配置自动更新`MessageSource`
+
+- 主要技术
+  - Java NIO 2: java.nio.file.WatchService
+  - Java Concurrency: java.util.concurrent.ExecutorService
+  - Spring: `org.springframework.context.support.AbstractMessageSource`
