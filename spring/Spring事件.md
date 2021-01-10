@@ -116,3 +116,21 @@
     - 模式模式：同步
     - 异步标注： @org.springframework.scheduling.annotation.Async
   - 实现限制：无法直接实现同步/异步动态切换
+
+## Spring 4.1 事件异常处理
+
+- Spring 3.0 错误处理接口 - `org.springframework.util.ErrorHandler`
+  - 使用场景
+    - Spring 事件
+      - SimpleApplicationEventMulticaster - Spring 4.1开始支持
+    - Spring 本地调度(scheduling)
+      - `org.springframework.sheduling.concurrent.ConcurrentTaskScheduler`
+      - `org.springframework.sheduling.concurrent.ThreadPoolTaskScheduler`
+
+## Spring 事件/监听器实现原理
+
+- 核心类 - `org.springframework.context.event.SimpleApplicationEventMulticaster`
+  - 设计模式：观察模式扩展
+  - 执行模式：同步/异步
+  - 异常处理：ErrorHandler
+  - 泛型处理：ResolvableType

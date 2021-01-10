@@ -60,3 +60,11 @@ kubectl edit cm coredns -n kube-system
 
 # 将plugin/forward 修改为114.114.114.114
 ```
+
+## 获取cert证书文件sha256信息
+
+```shell
+openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | \
+   openssl dgst -sha256 -hex | sed 's/^.* //'
+```
+
