@@ -176,3 +176,31 @@ PUT dynamic_mapping_test/_doc/10
 DELETE dynamic_mapping_test
 ```
 
+
+
+## 数组类型
+
+- ES中并不提供专门的数组类型, 但是任何字段，都可以包含多个相同类型的数值
+
+```http
+# 数组类型设置
+PUT users/_doc/1
+{
+  "name": "one",
+  "interests": "football"
+}
+
+PUT users/_doc/1
+{
+  "name": "one",
+  "interests": ["football", "Reading"]
+}
+
+POST users/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+```
+
