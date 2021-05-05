@@ -20,3 +20,4 @@ bin/zkServer.sh start
 ```sh
 bin/zkServer.sh start-foreground
 ```
+
