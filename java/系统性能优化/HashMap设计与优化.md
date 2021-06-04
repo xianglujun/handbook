@@ -57,7 +57,7 @@ Node用于存储具体的`Key-Value`简直对象，并且包含了`next`属性�
 
 > `（n-1）& hash`: 这里的`n`代表了哈希表的长度，哈希表的长度一般都是`2的n次幂`， 这样可以保证`(n-1)&hash`的计算得到的索引值总是位于table数据的索引之内。
 
-![img](I:\projects\handbook\java\系统性能优化\ebc8c027e556331dc327e18feb00c7d9.jpg)
+![img](.\ebc8c027e556331dc327e18feb00c7d9.jpg)
 
 > 在JDK1.8之后，HashMap因为了如黑树数据结构来提升链表的查询效率
 
