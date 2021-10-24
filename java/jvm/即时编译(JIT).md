@@ -179,6 +179,26 @@ public class FreqCode {
 
 
 
+### 输出格式字段说明
+
+```txt
+timestamp compilation-id flags tiered-compilation-level class:method <@ osr_bci> code-size <deoptimization>
+```
+
+- `timestamp`: 指代从JVM启动到执行的时间
+- `compilation-id`: 是一个内部引用编号
+- `flags`: 可能是一下几个值
+  - `%`: is_osr_method(@ sign indecates bytecode index for OSR methods)
+  - `s`: is_synchronized
+  - `!`: has_exception_handler
+  - `b`: is_blocking
+  - `n`: is_native
+- `tiered-compilation`:  当开启分层编译时，该值标识编译的层级
+- `Method`: 标识编译的方法名称，一般采用`Classname:method`展示
+- `@osr_bci`: 代表了OSR发生时，对应字节码所在索引
+- `code-size`: 总的字节码大小
+- `deoptimization`:  indicated if a method was de-optimized and made `not entrant` or `zombie` (More on this in section titled ‘Dynamic De-optimization’).
+
 
 
 热点方法的优化可以有效提高系统性能，一般我们可以通过以下几种方式来提高方法内联：
@@ -214,5 +234,18 @@ public class FreqCode {
  
 -XX:+EliminateAllocations 开启标量替换(jdk1.8默认开启)
 -XX:-EliminateAllocations 关闭标量替换
+```
+
+
+
+## 反优化（Dynamic De-optimization)
+
+当之前优化的方法不在被关联时， JVM将会执行反优化操作， 会将当前方法的编辑等级回滚到先前或者新的编译等级。
+
+```txt
+573  704 2 org.h2.table.Table::fireAfterRow (17 bytes)
+7963 2223 4 org.h2.table.Table::fireAfterRow (17 bytes)
+7964  704 2 org.h2.table.Table::fireAfterRow (17 bytes) made not entrant
+33547 704 2 org.h2.table.Table::fireAfterRow (17 bytes) made zombie
 ```
 
