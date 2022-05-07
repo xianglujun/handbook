@@ -1,5 +1,0 @@
-- 禁用auto-configuration
-  - 通过`@EnableAutoConfiguration(exclude=DataSourceAutoConfiguration.class)`
-  - 如果对应的类没有出现在`classpath`中, 可以直接使用`excludeName`进行全限定名称限定
-  - 同时可以通过配置`spring.autoconfigure.exlude`进行配置
-  - 以上的方式可以同时使用

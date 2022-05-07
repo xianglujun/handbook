@@ -1,0 +1,37 @@
+# BeanDefinitionParserDelate
+- parseBeanDefinitionElement(Element ele)
+- parseBeanDefinitionElement(Element ele, BeanDefinition containingBean)
+- parseBeanDefinitionElement(Element ele, String beanName,BeanDefinition containingBean)
+    - 通过parseState来保存当前正在被解析的&lt;bean&gt;信息
+    - 获取&ltbean&gt;的class属性
+    - 如果&lt;bean&gt包含了parent的属性, 则获取parent的属性
+    - [createBeanDefinition(String className, String parentName)](BeanDefinitionParserDelate_process.md#createbeandefinition)
+    - [parseBeanDefinitionAttributes(Element ele, String beanName,BeanDefinition containingBean,AbstractBeanDefinition bd)](BeanDefinitionParserDelate_process.md#parsebeandefinitionattributes)
+    - 获取&lt;bean&gt;下的&lt;description&gt;节点
+        - 如果`description`节点中的值不为空, 设置`BeanDefintion`的`setDescription`的值
+    - [parseMetaElements(Element ele, BeanMetadataAttributeAccessor attributeAccessor)](BeanDefinitionParserDelate_process.md#parsemetaelements)
+    - [parseLookupOverrideSubElements(Element beanEle, MethodOverrides overrides)](BeanDefinitionParserDelate_process.md#parselookupoverridesubelements)
+    - [parseReplacedMethodSubElements(Element beanEle, MethodOverrides overrides)](BeanDefinitionParserDelate_process.md#parsereplacedmethodsubelements)
+    - [parseConstructorArgElements(Element beanEle, BeanDefinition bd)](BeanDefinitionParserDelate_process.md#parseconstructorargelements)
+    - [parsePropertyElements(Element beanEle, BeanDefinition bd)](BeanDefinitionParserDelate_process.md#parsepropertyelements)
+    - [parseQualifierElements(Element beanEle, AbstractBeanDefinition bd)](BeanDefinitionParserDelate_process.md#parsequalifierelements)
+    - 将`readerContext`中的`Resource`与当前线程进行绑定
+    -
+- 判断`Bedefinition`是否创建成功
+  - 判断当前的beanName是否不为空
+    - 如果当前的`beanName`不存在
+      - 如果`constainBean`不为空, 则代表当前的`BeanDefinition`是一个嵌套的`bean`, 一次`beanNmae`的生成规则是
+        - BeanDefinitionUtils.generateBeanName(
+	BeanDefinition definition, BeanDefinitionRegistry registry, boolean isInnerBean)
+          - 获取当前`BeanDefinition`的`beanClassName`
+          - 如果`beanClassName`为空, 则获取当前`BeanDefinition`的`getParentName`
+            - 如果`parentName`不为空, 则以`parentName$child`进行注册
+            - 如果`parentName`为空, 则获取`BeanDefinition`的`getFactroryBeanName`的名称
+              - 如果`factoryBeanName`不为空, 则以`factoryBeanName$created`作为`beanName`
+          - 如果`innerBean`为true, 则以`beanName` + `#` +`BeanDefinition`的`hashcode`的值作为名称
+          - 如果`innerBean`为false, 判断`BeanDefinitionRegistry`总是是否已经包含了`beanName`, 如果已经包含, 则以`beanName` + `#` + `count++`来实现
+      - 根据生成的`BeanDefinition`, `beanName`, `aliasArray`创建`BeanDefinitionHolder(BeanDefinition, beanName, aliasArray)`
+      - 通过调用`BeanDefinitionDelegate`.`decorateBeanDefinitionIfRequired(Element, BeanDefinition)`, 该方法的主要目的是, 对于非`/beans`空间中的标签，需要通过不同的`NameSpaceHandler`进行相应的处理
+      - `BeanDefinitionReaderUtils`.`registerBeanDefinition(BeanDefinitionHolder definitionHolder,BeanDefinitionRegistry registry)`
+        - 该方法主要完成的是将当前的`BeanDefinition`注册到`BeanDefinitionRegistry`中去
+          - 因为这里通过`DefaultListableBeanFactory`进行`BeanDefinition`的注册, 因此可以看到, 会根据`beanName`将当前正在创建的`singleton`或者正在创建的`bean`进行销毁, 同时销毁当前已经存在的所有的依赖的缓存信息, 以及对依赖的`bean`全部进行销毁操作.
