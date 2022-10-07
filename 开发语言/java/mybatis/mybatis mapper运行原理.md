@@ -1222,11 +1222,162 @@ private void handleRowValuesForSimpleResultMap(ResultSetWrapper rsw, ResultMap r
   }
 ```
 
-#### selectMap, selectCursor
+##### getRowValue()
 
-这两个方法和selectList处理逻辑很相似，后续更新中....
+```java
+private Object getRowValue(ResultSetWrapper rsw, ResultMap resultMap, String columnPrefix) throws SQLException {
+    final ResultLoaderMap lazyLoader = new ResultLoaderMap();
+    // 创建ResultObject对象
+    Object rowValue = createResultObject(rsw, resultMap, lazyLoader, columnPrefix);
+    // 判断类型是否包含了ResultHandler的实现
+    if (rowValue != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
+      final MetaObject metaObject = configuration.newMetaObject(rowValue);
+      // 是否包含了构造器参数映射
+      boolean foundValues = this.useConstructorMappings;
+      // 判断是否自动映射，这里根据ResultMap来做判断，
+      if (shouldApplyAutomaticMappings(resultMap, false)) {
+        // 自动映射，其实就是根据sql中的字段名称去匹配在resultObject中是否包含对应的属性
+        // 以及对应的setter方法，因此这里不做过多阐述
+        foundValues = applyAutomaticMappings(rsw, resultMap, metaObject, columnPrefix) || foundValues;
+      }
+      // 这里处理带有prefix的属性，以及嵌套查询的逻辑实现
+      foundValues = applyPropertyMappings(rsw, resultMap, metaObject, lazyLoader, columnPrefix) || foundValues;
+      foundValues = lazyLoader.size() > 0 || foundValues;
+      rowValue = foundValues || configuration.isReturnInstanceForEmptyRow() ? rowValue : null;
+    }
+    return rowValue;
+  }
+```
+
+##### createResultObject()
+
+```java
+private Object createResultObject(ResultSetWrapper rsw, ResultMap resultMap, ResultLoaderMap lazyLoader, String columnPrefix) throws SQLException {
+    this.useConstructorMappings = false; // reset previous mapping result
+    final List<Class<?>> constructorArgTypes = new ArrayList<>();
+    final List<Object> constructorArgs = new ArrayList<>();
+    // 结果对象
+    Object resultObject = createResultObject(rsw, resultMap, constructorArgTypes, constructorArgs, columnPrefix);
+    // 是否包含ResultHandler, 不包含怎使用set方法设置属性
+    if (resultObject != null && !hasTypeHandlerForResultObject(rsw, resultMap.getType())) {
+      final List<ResultMapping> propertyMappings = resultMap.getPropertyResultMappings();
+      // 设置对象参数属性
+      for (ResultMapping propertyMapping : propertyMappings) {
+        // issue gcode #109 && issue #149
+        if (propertyMapping.getNestedQueryId() != null && propertyMapping.isLazy()) {
+          resultObject = configuration.getProxyFactory().createProxy(resultObject, lazyLoader, configuration, objectFactory, constructorArgTypes, constructorArgs);
+          break;
+        }
+      }
+    }
+    // 当对象创建成功，并且使用了构造器设置参数，则为true
+    this.useConstructorMappings = resultObject != null && !constructorArgTypes.isEmpty(); // set current mapping result
+    return resultObject;
+  }
+```
+
+##### createResultObject() 创建ResultObject
+
+创建结果对象最终会执行到该方法，该方法中是对结果集的处理，具体源码如下：
+
+```java
+private Object createResultObject(ResultSetWrapper rsw, ResultMap resultMap, List<Class<?>> constructorArgTypes, List<Object> constructorArgs, String columnPrefix)
+      throws SQLException {
+    // 获取结果对象类型
+    final Class<?> resultType = resultMap.getType();
+    // 获取对象的元数据信息
+    final MetaClass metaType = MetaClass.forClass(resultType, reflectorFactory);
+    // 获取结果集的构造器配置信息
+    final List<ResultMapping> constructorMappings = resultMap.getConstructorResultMappings();
+    // 判断是否对于结果类型，有对应的ResultHandler处理
+    if (hasTypeHandlerForResultObject(rsw, resultType)) {
+      // 如果有对应的类型处理，则穿件基本类型结果对象
+      return createPrimitiveResultObject(rsw, resultMap, columnPrefix);
+    } else if (!constructorMappings.isEmpty()) {
+      // 判断是否包含了构造器的映射，如果包含，则按照构造器映射创建对象
+      return createParameterizedResultObject(rsw, resultType, constructorMappings, constructorArgTypes, constructorArgs, columnPrefix);
+    } else if (resultType.isInterface() || metaType.hasDefaultConstructor()) {
+      // 如果对象是接口或者包含了默认构造器，则使用ObjecctFactory创建对象
+      return objectFactory.create(resultType);
+    } else if (shouldApplyAutomaticMappings(resultMap, false)) {
+      return createByConstructorSignature(rsw, resultType, constructorArgTypes, constructorArgs);
+    }
+    throw new ExecutorException("Do not know how to create an instance of " + resultType);
+  }
+```
+
+#### selectMap
+
+该方法主要是返回结果集为Map对象，因此这里查看下对应源码即可：
+
+> 这里要注意，selectMap并不是按照返回值为map时调用，而是使用了@MapKey注解的时候，才会走这个逻辑。
+
+```java
+public <K, V> Map<K, V> selectMap(String statement, Object parameter, String mapKey, RowBounds rowBounds) {
+    // 这里和以上的查询类似，就不做过多阐述
+    final List<? extends V> list = selectList(statement, parameter, rowBounds);
+    final DefaultMapResultHandler<K, V> mapResultHandler = new DefaultMapResultHandler<>(mapKey,
+            configuration.getObjectFactory(), configuration.getObjectWrapperFactory(), configuration.getReflectorFactory());
+    final DefaultResultContext<V> context = new DefaultResultContext<>();
+    for (V o : list) {
+      // 遍历每一个元素，并放入到上下文中
+      context.nextResultObject(o);
+      // 处理单个对象结果
+      mapResultHandler.handleResult(context);
+    }
+    // 返回map的结果
+    return mapResultHandler.getMappedResults();
+  }
 
 
+```
+
+##### DefaultMapResultHandler
+
+这里查看下这个是如何将一个对象映射成为map对象的。
+
+```java
+public void handleResult(ResultContext<? extends V> context) {
+    // 获取结果对象
+    final V value = context.getResultObject();
+    // 获取结果对象的元数据信息
+    final MetaObject mo = MetaObject.forObject(value, objectFactory, objectWrapperFactory, reflectorFactory);
+    // TODO is that assignment always true?
+    // 这里获取mapKey, 这个mapKey是可能为null的
+    final K key = (K) mo.getValue(mapKey);
+    // 加入到结果集
+    mappedResults.put(key, value);
+  }
+
+
+```
+
+#### selectCursor
+
+查询指针的是由mybatis实现的，在处理查询的逻辑的时候基本保持一致，这里主要看下对结果集的封装情况。
+
+```java
+public <E> Cursor<E> handleCursorResultSets(Statement stmt) throws SQLException {
+   
+    ErrorContext.instance().activity("handling cursor results").object(mappedStatement.getId());
+
+    ResultSetWrapper rsw = getFirstResultSet(stmt);
+
+    List<ResultMap> resultMaps = mappedStatement.getResultMaps();
+
+    int resultMapCount = resultMaps.size();
+    validateResultMapsCount(rsw, resultMapCount);
+    if (resultMapCount != 1) {
+      throw new ExecutorException("Cursor results cannot be mapped to multiple resultMaps");
+    }
+
+    ResultMap resultMap = resultMaps.get(0);
+    // 创建Cursor对象
+    return new DefaultCursor<>(this, resultMap, rsw, rowBounds);
+  }
+```
+
+这里就不详细介绍cursor的使用，如果有兴趣可以自己查看一下源码。
 
 
 
