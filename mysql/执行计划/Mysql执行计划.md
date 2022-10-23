@@ -1,17 +1,19 @@
 # mysql执行计划
 
 ## mysql执行计划的调用方式
+
 - EXPLAIN SELECT ..
 
 ### 变体实现
+
 1. EXPLAIN EXTENDED SELECT ...
-将执行计划"反编译"成SQL语句, 可以通过`SHOW WARNINGS` 可得到被MYSQL优化器优化之后的SQL语句
+   将执行计划"反编译"成SQL语句, 可以通过`SHOW WARNINGS` 可得到被MYSQL优化器优化之后的SQL语句
 
 2. EXPLAIN PARTITIONS SELECT ...
-用于分区表的EXPLAIN的操作。
-
+   用于分区表的EXPLAIN的操作。
 
 ## 执行计划包含的信息
+
 - id
 - select_type
 - table
@@ -24,27 +26,20 @@
 - Extra
 
 ## id
+
 是一串数字, 用于表示查询表的SELECT的语句或者执行表的顺序。数字越大，表示越先执行
-
-
 
 ## select_type
 
 表示SELECT类型，常见的有`SIMPLE(普通查询, 即没有联合查询)`， `PRIMARY(主查询)`， `UNION(UNION中后面的查询)`， `SUBQUERY(子查询)`
 
-
-
 ## table
 
 当前执行计划查询的表，如果给表起别名了，则显示别名信息
 
-
-
 ## partitions
 
 访问分区表信息
-
-
 
 ## type
 
@@ -61,45 +56,30 @@
 
 表示可能使用到的索引
 
-
-
 ## key
 
 实际使用到的索引
-
-
 
 ## key_len
 
 当前使用的索引的长度
 
-
-
 ## ref
 
 关联ID等信息
-
-
 
 ## rows
 
 查找记录所扫描的行数
 
-
-
 ## filtered
 
 查找到所需记录占总扫描记录数的比例
-
-
 
 ## Extra
 
 额外的xinxi ssss
 
-
-
-
 ## 参考
-[Mysql执行计划解读: https://mp.weixin.qq.com/s/9itEKlpXhrtlM98O_ryoAA](https://mp.weixin.qq.com/s/9itEKlpXhrtlM98O_ryoAA)
 
+[Mysql执行计划解读: https://mp.weixin.qq.com/s/9itEKlpXhrtlM98O_ryoAA](https://mp.weixin.qq.com/s/9itEKlpXhrtlM98O_ryoAA)
