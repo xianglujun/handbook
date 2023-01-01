@@ -1,5 +1,62 @@
 # css布局
 
+## 定位
+
+<table>
+        <thead>
+            <tr>
+                <th>个数</th>
+                <th>书写语法</th>
+                <th>说明</th>
+                <th>文档流</th>
+                <th>偏移位置（top left right bottom）时候的参照物</th>
+                <th>层叠顺序(z-index)</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>position: static</td>
+                <td>默认值</td>
+                <td>默认</td>
+                <td>默认值</td>
+                <td rowspan="5">
+                    z-index属性是不带单位的，并且可以给负值，没有设置z-index时，最后写的对象优先在上层，设置后，数值越大，层越靠上
+                </td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>position: absolute;</td>
+                <td>绝对定位</td>
+                <td>脱离</td>
+                <td>A) 当没有父元素或者父元素没有定位，参照物是浏览器窗口的第一屏<br/>
+                B) 有父元素且父元素有定位，参照父元素</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>position: relative;</td>
+                <td>相对定位</td>
+                <td>不脱离</td>
+                <td>自己初始位置</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>position: fixed;</td>
+                <td>固定定位</td>
+                <td>脱离</td>
+                <td>浏览器的当前窗口</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>position: sticky;</td>
+                <td>粘性定位</td>
+                <td colspan="3">可以做吸顶效果，粘性定位是CSS3.0新增加的，兼容不好</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+
 ## 正常布局流
 
 正常布局流指代的是对html元素不做任何的控制，以html浏览器默认的布局方式展示。
@@ -14,7 +71,6 @@
 </ul>
 
 <p>The end!</p>
-
 ```
 
 则以上的元素，最终的展示方式为:
@@ -100,7 +156,6 @@ flex-flow是flex-direction和flex-wrap的合并的写法，例如
 ```css
 flex-direction: row;
 flex-wrap: wrap;
-
 ```
 
 则合并写法为：
@@ -127,7 +182,6 @@ article {
 article:nth-of-type(3) {
   flex: 2;
 }
-
 ```
 
 这就代表了，在第三个article元素的宽度会比其他的flex项宽2倍。
@@ -203,7 +257,6 @@ article {
     </div>
   </body>
 </html>
-
 ```
 
 在div中新增样式:
@@ -214,7 +267,6 @@ div {
   align-items: center;
   justify-content: space-around;
 }
-
 ```
 
 通过以上的例子，就可以看到按钮很顺利的在垂直方向居中了。
@@ -235,7 +287,6 @@ div {
 button:first-child {
   align-self: flex-end;
 }
-
 ```
 
 [`justify-content`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/justify-content) 控制 flex 项在主轴上的位置。
@@ -252,7 +303,6 @@ button:first-child {
 button:first-child {
   order: 1;
 }
-
 ```
 
 下面我们谈下它实现的一些细节：
@@ -268,11 +318,8 @@ button:first-child {
 button:last-child {
   order: -1;
 }
-
 ```
 
 ## 网格
 
 CSS 网格是一个用于 web 的二维布局系统。利用网格，你可以把内容按照行与列的格式进行排版。另外，网格还能非常轻松地实现一些复杂的布局。关于使用网格进行页面排版，这篇文章包含了你需要的一切知识。
-
-
