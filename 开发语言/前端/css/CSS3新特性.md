@@ -95,3 +95,71 @@
   - 用户行为选择器
     
     - 选择匹配的E元素，且用户鼠标停留在元素E上。IE6及以下浏览器仅支持a:hover
+
+## 4. 文本阴影
+
+`text-shadow`用于实现文本阴影，具体写法为:
+
+```css
+text-shadow: -10px -10px 5px red;
+```
+
+其中的参数含义为：
+
+- 10px: 水平方向的位移
+
+- 10px: 垂直方向的位移
+
+- 5px: 模糊成都
+
+- red: 阴影颜色
+
+## 5. 盒子阴影 box-shadow
+
+属性值:
+
+- h-shadow: 必须的，水平阴影的位置，允许负值
+
+- v-shadow: 必须的，垂直阴影的位置，允许负值
+
+- blur: 可选，模糊距离
+
+- spread: 可选。阴影的大小
+
+- color: 可选，阴影的颜色
+
+- inset: 可选，从外层的阴影改变阴影内侧阴影
+
+## 6.  border-radius
+
+设置盒子边框圆角，能够使用`px`或者`%`来实现，
+
+- `border-radius: 1px`当值只有一个的时候，四个角一样
+
+- `border-radius: 1px 2px`左上右下，左下右上一致
+
+- `border-radius: 1px 2px 3px`表示左上，左下右上，右下
+
+- `border-radius: 1px 2px 3px 4px`顺时针设置
+
+- `border-radius: 30px/60px`表示水平/垂直方向的设置
+
+## 7. 字体引入
+
+`@font-face`是CSS3中的一个模块，他主要是把自己定义的Web字体嵌入到你的网页中，随着`@font-face`模块的出现，我们在web开发中使用字体不怕只能
+
+`@font-face`的语法规则：
+
+- font-family: 字体列表，我的字体名称
+
+- src: 字体守在的路径
+
+- font-weight: 字体的粗细
+
+- font-style: 字体样式
+
+语法说明:
+
+- 字体名称：此值指代的就是你自定义的字体名称，最好是使用下载的默认字体，该名称可以直接在font-family中直接使用
+
+- source: 指代了字体的存放路径，可以是相对路径也可以是绝对路径
