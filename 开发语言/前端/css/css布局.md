@@ -1,6 +1,61 @@
 # css布局
 
-## 正常布局流
+## 定位
+
+<table>
+        <thead>
+            <tr>
+                <th>个数</th>
+                <th>书写语法</th>
+                <th>说明</th>
+                <th>文档流</th>
+                <th>偏移位置（top left right bottom）时候的参照物</th>
+                <th>层叠顺序(z-index)</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>position: static</td>
+                <td>默认值</td>
+                <td>默认</td>
+                <td>默认值</td>
+                <td rowspan="5">
+                    z-index属性是不带单位的，并且可以给负值，没有设置z-index时，最后写的对象优先在上层，设置后，数值越大，层越靠上
+                </td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>position: absolute;</td>
+                <td>绝对定位</td>
+                <td>脱离</td>
+                <td>A) 当没有父元素或者父元素没有定位，参照物是浏览器窗口的第一屏<br/>
+                B) 有父元素且父元素有定位，参照父元素</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>position: relative;</td>
+                <td>相对定位</td>
+                <td>不脱离</td>
+                <td>自己初始位置</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>position: fixed;</td>
+                <td>固定定位</td>
+                <td>脱离</td>
+                <td>浏览器的当前窗口</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>position: sticky;</td>
+                <td>粘性定位</td>
+                <td colspan="3">可以做吸顶效果，粘性定位是CSS3.0新增加的，兼容不好</td>
+            </tr>
+        </tbody>
+    </table>
+
+## 1. 正常布局流
 
 正常布局流指代的是对html元素不做任何的控制，以html浏览器默认的布局方式展示。
 
@@ -14,7 +69,6 @@
 </ul>
 
 <p>The end!</p>
-
 ```
 
 则以上的元素，最终的展示方式为:
@@ -29,11 +83,11 @@
 
 如果两个相邻的元素都设置了 margin 并且两个 margin 有重叠，那么更大的设置会被保留，小的则会消失 --- 这被称为外边距叠加，我们之前见到过。
 
-## 弹性盒子
+## 2. 弹性盒子
 
 弹性盒子是一种按照行和列布局元素的以为布局方法。元素可以膨胀以填充额外的空间，收缩以适应更小的空间。
 
-### 为什么使用弹性盒子？
+### 2.1 为什么使用弹性盒子？
 
 在之前的版本中，为了能够更好的实现布局的实现，一般会使用float和position实现布局，但是这种方式不能很快的实现以下场景：
 
@@ -43,7 +97,15 @@
 
 - 使多列布局中的所有都使用相同的高度，即使他们包含的内容量不相同
 
-### flex模型说明
+### 2.2 使用弹性盒子的影响
+
+- 子元素默认横向排列
+
+- 行内元素，变成了块级元素
+
+- 只有一个元素的时候，margin:auto自动在水平和垂直方向居中
+
+### 2.3 flex模型说明
 
 当采用flex布局的时候，主要围绕两个轴来进行布局：
 
@@ -57,7 +119,7 @@
 
 - 在flex容器中表现为弹性的盒子成为flex的项
 
-### 列还是行
+### 2.4 列还是行
 
 flex中控制主轴的方法，则是通过`flex-direction`进行控制，默认值为`row`, 我们也可以更改，例如
 
@@ -67,13 +129,14 @@ flex中控制主轴的方法，则是通过`flex-direction`进行控制，默认
 }
 ```
 
-### 换行
+### 2.5 换行
 
 当我们在定高和定宽的布局中，如果flex中的元素比较多的时候，这个时候flex项将会产生溢出，如果我们需要解决这个问题，因此我们需要在flex容器中加入样式：
 
 ```css
 .container {
     flex-wrap: wrap;
+    align-conent: flex-start; 控制这行后的行间距
 }
 ```
 
@@ -93,14 +156,13 @@ flex中控制主轴的方法，则是通过`flex-direction`进行控制，默认
 
 - 当最后一行不足列的数量时，flex选项会占满整行
 
-### flex-flow的缩写
+### 2.6 flex-flow的缩写
 
 flex-flow是flex-direction和flex-wrap的合并的写法，例如
 
 ```css
 flex-direction: row;
 flex-wrap: wrap;
-
 ```
 
 则合并写法为：
@@ -109,7 +171,7 @@ flex-wrap: wrap;
 flex-flow: row wrap;
 ```
 
-### flex的动态尺寸
+### 2.7 flex的动态尺寸
 
 在设置flex项的尺寸的时候，我们能够设置flex的宽度能够带有带有，也可以不带有单位，例如：
 
@@ -127,7 +189,6 @@ article {
 article:nth-of-type(3) {
   flex: 2;
 }
-
 ```
 
 这就代表了，在第三个article元素的宽度会比其他的flex项宽2倍。
@@ -144,7 +205,7 @@ article {
 
 > 弹性盒子真正的用途在于它的灵活性和响应性。在你调整浏览器的窗口或者增加article元素的时候，布局依然是好的。
 
-### flex样式的缩写与全写
+### 2.8 flex样式的缩写与全写
 
 [`flex`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/flex) 是一个可以指定最多三个不同值的缩写属性：
 
@@ -152,7 +213,7 @@ article {
 - 第二个无单位比例——[`flex-shrink`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/flex-shrink)——一般用于溢出容器的 flex 项。这指定了从每个 flex 项中取出多少溢出量，以阻止它们溢出它们的容器。
 - 第三个是上面讨论的最小值。可以单独指定全写 [`flex-basis`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/flex-basis) 属性的值。
 
-### 水平和垂直对齐
+### 2.9 水平和垂直对齐
 
 我们可以通过样式的设置，让flex选项按照主轴或者交叉轴对齐。
 
@@ -203,7 +264,6 @@ article {
     </div>
   </body>
 </html>
-
 ```
 
 在div中新增样式:
@@ -214,7 +274,6 @@ div {
   align-items: center;
   justify-content: space-around;
 }
-
 ```
 
 通过以上的例子，就可以看到按钮很顺利的在垂直方向居中了。
@@ -235,7 +294,6 @@ div {
 button:first-child {
   align-self: flex-end;
 }
-
 ```
 
 [`justify-content`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/justify-content) 控制 flex 项在主轴上的位置。
@@ -246,13 +304,12 @@ button:first-child {
 - 而我们上面用到的值 `space-around` 是很有用的——它会使所有 flex 项沿着主轴均匀地分布，在任意一端都会留有一点空间。
 - 还有一个值是 `space-between`，它和 `space-around` 非常相似，只是它不会在两端留下任何空间。
 
-### flex项排序
+### 2.10 flex项排序
 
 ```css
 button:first-child {
   order: 1;
 }
-
 ```
 
 下面我们谈下它实现的一些细节：
@@ -268,11 +325,8 @@ button:first-child {
 button:last-child {
   order: -1;
 }
-
 ```
 
 ## 网格
 
 CSS 网格是一个用于 web 的二维布局系统。利用网格，你可以把内容按照行与列的格式进行排版。另外，网格还能非常轻松地实现一些复杂的布局。关于使用网格进行页面排版，这篇文章包含了你需要的一切知识。
-
-
