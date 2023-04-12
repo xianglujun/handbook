@@ -13,7 +13,6 @@ nacos的源代码放在github上的，对应的下载地址为：[nacos下载地
 ```shell
 # 解压安装包
 tar -xvzf nacos-server-2.2.1.tar.gz
-
 ```
 
 安装包解压之后，我们就可以看到nacos的目录结构：
@@ -60,7 +59,6 @@ sh startup.sh -m standalone
 ```properties
 ### The default token (Base64 String):
 nacos.core.auth.plugin.nacos.token.secret.key=VGhpc0lzTXlDdXN0b21TZWNyZXRLZXkwMTIzNDU2Nzg=
-
 ```
 
 重新启动nacos, 发现启动nacos成功，以上问题得到解决.
@@ -83,7 +81,6 @@ vi conf/application.properties
 nacos.core.auth.caching.enabled=true
 nacos.core.auth.server.identity.key=VGhpc0lzTXlDdXN0b21TZWNyZXRLZXkwMTIzNDU2Nzg=
 nacos.core.auth.server.identity.value=VGhpc0lzTXlDdXN0b21TZWNyZXRLZXkwMTIzNDU2Nzg=
-
 ```
 
 重启nacos
@@ -152,5 +149,3 @@ sh bin/startup.sh
 ![](../../../../assets/2023-03-28-15-23-04-image.png)
 
 则最终的展示情况如上图所示，则集群配置成功。
-
-
