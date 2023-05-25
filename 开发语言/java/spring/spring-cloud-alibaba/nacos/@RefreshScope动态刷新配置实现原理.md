@@ -34,11 +34,11 @@ public class NacosValueService {
 @Documented
 public @interface RefreshScope {
 
-	/**
-	 * @see Scope#proxyMode()
-	 * @return proxy mode
-	 */
-	ScopedProxyMode proxyMode() default ScopedProxyMode.TARGET_CLASS;
+    /**
+     * @see Scope#proxyMode()
+     * @return proxy mode
+     */
+    ScopedProxyMode proxyMode() default ScopedProxyMode.TARGET_CLASS;
 
 }
 ```
@@ -127,59 +127,59 @@ protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
 
 ```java
 public static BeanDefinitionHolder createScopedProxy(BeanDefinitionHolder definition,
-			BeanDefinitionRegistry registry, boolean proxyTargetClass) {
+            BeanDefinitionRegistry registry, boolean proxyTargetClass) {
 
-		// 获取初始beanName
-		String originalBeanName = definition.getBeanName();
-		// 获取BeanDefinition
-		BeanDefinition targetDefinition = definition.getBeanDefinition();
-		// 获取targetBeanName, 这里格式为: `scopedTarget.${originalBeanName}`
-		String targetBeanName = getTargetBeanName(originalBeanName);
+        // 获取初始beanName
+        String originalBeanName = definition.getBeanName();
+        // 获取BeanDefinition
+        BeanDefinition targetDefinition = definition.getBeanDefinition();
+        // 获取targetBeanName, 这里格式为: `scopedTarget.${originalBeanName}`
+        String targetBeanName = getTargetBeanName(originalBeanName);
 
-		// Create a scoped proxy definition for the original bean name,
-		// "hiding" the target bean in an internal target definition.
-		// 这里是为初始的BeanDefinition创建一个代理，隐藏目标的BeanDefinition
-		RootBeanDefinition proxyDefinition = new RootBeanDefinition(ScopedProxyFactoryBean.class);
-		proxyDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, targetBeanName));
-		proxyDefinition.setOriginatingBeanDefinition(targetDefinition);
-		proxyDefinition.setSource(definition.getSource());
-		proxyDefinition.setRole(targetDefinition.getRole());
+        // Create a scoped proxy definition for the original bean name,
+        // "hiding" the target bean in an internal target definition.
+        // 这里是为初始的BeanDefinition创建一个代理，隐藏目标的BeanDefinition
+        RootBeanDefinition proxyDefinition = new RootBeanDefinition(ScopedProxyFactoryBean.class);
+        proxyDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, targetBeanName));
+        proxyDefinition.setOriginatingBeanDefinition(targetDefinition);
+        proxyDefinition.setSource(definition.getSource());
+        proxyDefinition.setRole(targetDefinition.getRole());
 
-		// 设置TargetBeanName属性，则指向了`scopedTarget.${originalBeanName}`BeanDefinition
-		proxyDefinition.getPropertyValues().add("targetBeanName", targetBeanName);
-		
-		if (proxyTargetClass) {
-			// 如果ProxMode为TARGET_CLASS, 则设置属性'org.springframework.aop.framework.autoproxy.AutoProxyUtils.preserveTargetClass=true'
-			targetDefinition.setAttribute(AutoProxyUtils.PRESERVE_TARGET_CLASS_ATTRIBUTE, Boolean.TRUE);
-			// ScopedProxyFactoryBean's "proxyTargetClass" default is TRUE, so we don't need to set it explicitly here.
-		}
-		else {
-			// 如果是其他的，则设置proxyTargetClass为false
-			proxyDefinition.getPropertyValues().add("proxyTargetClass", Boolean.FALSE);
-		}
+        // 设置TargetBeanName属性，则指向了`scopedTarget.${originalBeanName}`BeanDefinition
+        proxyDefinition.getPropertyValues().add("targetBeanName", targetBeanName);
 
-		// Copy autowire settings from original bean definition.
-		// 从源BeanDefinition中拷贝属性
-		proxyDefinition.setAutowireCandidate(targetDefinition.isAutowireCandidate());
-		proxyDefinition.setPrimary(targetDefinition.isPrimary());
-		if (targetDefinition instanceof AbstractBeanDefinition) {
-			proxyDefinition.copyQualifiersFrom((AbstractBeanDefinition) targetDefinition);
-		}
+        if (proxyTargetClass) {
+            // 如果ProxMode为TARGET_CLASS, 则设置属性'org.springframework.aop.framework.autoproxy.AutoProxyUtils.preserveTargetClass=true'
+            targetDefinition.setAttribute(AutoProxyUtils.PRESERVE_TARGET_CLASS_ATTRIBUTE, Boolean.TRUE);
+            // ScopedProxyFactoryBean's "proxyTargetClass" default is TRUE, so we don't need to set it explicitly here.
+        }
+        else {
+            // 如果是其他的，则设置proxyTargetClass为false
+            proxyDefinition.getPropertyValues().add("proxyTargetClass", Boolean.FALSE);
+        }
 
-		// The target bean should be ignored in favor of the scoped proxy.
-		targetDefinition.setAutowireCandidate(false);
-		targetDefinition.setPrimary(false);
+        // Copy autowire settings from original bean definition.
+        // 从源BeanDefinition中拷贝属性
+        proxyDefinition.setAutowireCandidate(targetDefinition.isAutowireCandidate());
+        proxyDefinition.setPrimary(targetDefinition.isPrimary());
+        if (targetDefinition instanceof AbstractBeanDefinition) {
+            proxyDefinition.copyQualifiersFrom((AbstractBeanDefinition) targetDefinition);
+        }
 
-		// Register the target bean as separate bean in the factory.
-		// 这里需要注意，我们实际的beanName名称是自定义或者指定，但是我们这里处理完成了之后
-		// 这里就变成了`scopedTarget.${originalBeanName}`, 因此注册的bean名称发生了改变
-		registry.registerBeanDefinition(targetBeanName, targetDefinition);
+        // The target bean should be ignored in favor of the scoped proxy.
+        targetDefinition.setAutowireCandidate(false);
+        targetDefinition.setPrimary(false);
 
-		// Return the scoped proxy definition as primary bean definition
-		// (potentially an inner bean).
-		// 返回代理之后的BeanDefinition信息
-		return new BeanDefinitionHolder(proxyDefinition, originalBeanName, definition.getAliases());
-	}
+        // Register the target bean as separate bean in the factory.
+        // 这里需要注意，我们实际的beanName名称是自定义或者指定，但是我们这里处理完成了之后
+        // 这里就变成了`scopedTarget.${originalBeanName}`, 因此注册的bean名称发生了改变
+        registry.registerBeanDefinition(targetBeanName, targetDefinition);
+
+        // Return the scoped proxy definition as primary bean definition
+        // (potentially an inner bean).
+        // 返回代理之后的BeanDefinition信息
+        return new BeanDefinitionHolder(proxyDefinition, originalBeanName, definition.getAliases());
+    }
 ```
 
 ## 3. RefreshScope管理Bean
@@ -191,14 +191,14 @@ public static BeanDefinitionHolder createScopedProxy(BeanDefinitionHolder defini
 ```java
 String scopeName = mbd.getScope();
 if (!StringUtils.hasLength(scopeName)) {
-	throw new IllegalStateException("No scope name defined for bean '" + beanName + "'");
+    throw new IllegalStateException("No scope name defined for bean '" + beanName + "'");
 }
 Scope scope = this.scopes.get(scopeName);
 if (scope == null) {
-	throw new IllegalStateException("No Scope registered for scope name '" + scopeName + "'");
+    throw new IllegalStateException("No Scope registered for scope name '" + scopeName + "'");
 }
 try {
-	Object scopedInstance = scope.get(beanName, () -> { ...
+    Object scopedInstance = scope.get(beanName, () -> { ...
 ```
 
 从代码中，可以看出，主要包含以下步骤：
@@ -218,11 +218,11 @@ try {
 从以上的类结构图可以知道，因为GenericScope本身实现了`BeanFactoryPostProcessor`类，因此在BeanFactory准备完毕后，就会实例化该类并回调函数。因此我们查看对应的实现方法。
 
 ```java
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-		beanFactory.registerScope(this.name, this);
-		setSerializationId(beanFactory);
-	}
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
+        beanFactory.registerScope(this.name, this);
+        setSerializationId(beanFactory);
+    }
 ```
 
 可以得知，在`postProcessBeanFacotry()`方法回调方法中，通过`regsiterScope()`方法将`RefreshScope`对象注册到`BeanFactory`对象中，因此在创建`Bean`的时候能够通过`RefreshScope`进行管理。
@@ -235,29 +235,29 @@ try {
 // 获取scope
 String scopeName = mbd.getScope();
 if (!StringUtils.hasLength(scopeName)) {
-	throw new IllegalStateException("No scope name defined for bean '" + beanName + "'");
+    throw new IllegalStateException("No scope name defined for bean '" + beanName + "'");
 }
 // 根据scope，获取对应的Scope对象
 Scope scope = this.scopes.get(scopeName);
 // 如果没有注册Scope类型，将抛出错误
 if (scope == null) {
-	throw new IllegalStateException("No Scope registered for scope name '" + scopeName + "'");
+    throw new IllegalStateException("No Scope registered for scope name '" + scopeName + "'");
 }
 try {
-	// 从Scope中获取bean对象，如果bean对象不存在，则通过函数创建bean
-	Object scopedInstance = scope.get(beanName, () -> {
-		beforePrototypeCreation(beanName);
-		try {
-			return createBean(beanName, mbd, args);
-		}
-		finally {
-			afterPrototypeCreation(beanName);
-		}
-	});
-	beanInstance = getObjectForBeanInstance(scopedInstance, name, beanName, mbd);
+    // 从Scope中获取bean对象，如果bean对象不存在，则通过函数创建bean
+    Object scopedInstance = scope.get(beanName, () -> {
+        beforePrototypeCreation(beanName);
+        try {
+            return createBean(beanName, mbd, args);
+        }
+        finally {
+            afterPrototypeCreation(beanName);
+        }
+    });
+    beanInstance = getObjectForBeanInstance(scopedInstance, name, beanName, mbd);
 }
 catch (IllegalStateException ex) {
-	throw new ScopeNotActiveException(beanName, scopeName, ex);
+    throw new ScopeNotActiveException(beanName, scopeName, ex);
 }
 ```
 
@@ -285,50 +285,50 @@ catch (IllegalStateException ex) {
 
 ```java
 public void setBeanFactory(BeanFactory beanFactory) {
-	// 判断beanFactory是否为ConfigurableBeanFacotry的实例
-	if (!(beanFactory instanceof ConfigurableBeanFactory)) {
-		throw new IllegalStateException("Not running in a ConfigurableBeanFactory: " + beanFactory);
-	}
-	ConfigurableBeanFactory cbf = (ConfigurableBeanFactory) beanFactory;
+    // 判断beanFactory是否为ConfigurableBeanFacotry的实例
+    if (!(beanFactory instanceof ConfigurableBeanFactory)) {
+        throw new IllegalStateException("Not running in a ConfigurableBeanFactory: " + beanFactory);
+    }
+    ConfigurableBeanFactory cbf = (ConfigurableBeanFactory) beanFactory;
 
-	// scopedTargetSource默认为SimpleBeanTargetSource, 这里绑定了BeanFactory
-	this.scopedTargetSource.setBeanFactory(beanFactory);
+    // scopedTargetSource默认为SimpleBeanTargetSource, 这里绑定了BeanFactory
+    this.scopedTargetSource.setBeanFactory(beanFactory);
 
-	// 创建ProxyFactory实例
-	ProxyFactory pf = new ProxyFactory();
-	// 从当前的ProxyConfig拷贝属性值到ProxyFactory中
-	pf.copyFrom(this);
-	// 设置被代理对象的信息
-	pf.setTargetSource(this.scopedTargetSource);
+    // 创建ProxyFactory实例
+    ProxyFactory pf = new ProxyFactory();
+    // 从当前的ProxyConfig拷贝属性值到ProxyFactory中
+    pf.copyFrom(this);
+    // 设置被代理对象的信息
+    pf.setTargetSource(this.scopedTargetSource);
 
-	Assert.notNull(this.targetBeanName, "Property 'targetBeanName' is required");
-	// 获取被代理对象的Class类型
-	Class<?> beanType = beanFactory.getType(this.targetBeanName);
-	// 如果beanType为空, 那么对应的bean的class没有被加载到BeanFactory中,则抛出异常
-	if (beanType == null) {
-		throw new IllegalStateException("Cannot create scoped proxy for bean '" + this.targetBeanName +
-				"': Target type could not be determined at the time of proxy creation.");
-	}
-	// 判断是否为为代理目标对象，即判断proxyTargetClass属性值是否为false
-	// 判断代理对象的类型是否为接口
-	// 判断代理对象的类型定义是否为private
-	// 当以上条件满足一个时，那么就获取代理对象class的所有接口，并绑定到ProxyFactory对象中
-	if (!isProxyTargetClass() || beanType.isInterface() || Modifier.isPrivate(beanType.getModifiers())) {
-		pf.setInterfaces(ClassUtils.getAllInterfacesForClass(beanType, cbf.getBeanClassLoader()));
-	}
+    Assert.notNull(this.targetBeanName, "Property 'targetBeanName' is required");
+    // 获取被代理对象的Class类型
+    Class<?> beanType = beanFactory.getType(this.targetBeanName);
+    // 如果beanType为空, 那么对应的bean的class没有被加载到BeanFactory中,则抛出异常
+    if (beanType == null) {
+        throw new IllegalStateException("Cannot create scoped proxy for bean '" + this.targetBeanName +
+                "': Target type could not be determined at the time of proxy creation.");
+    }
+    // 判断是否为为代理目标对象，即判断proxyTargetClass属性值是否为false
+    // 判断代理对象的类型是否为接口
+    // 判断代理对象的类型定义是否为private
+    // 当以上条件满足一个时，那么就获取代理对象class的所有接口，并绑定到ProxyFactory对象中
+    if (!isProxyTargetClass() || beanType.isInterface() || Modifier.isPrivate(beanType.getModifiers())) {
+        pf.setInterfaces(ClassUtils.getAllInterfacesForClass(beanType, cbf.getBeanClassLoader()));
+    }
 
-	// Add an introduction that implements only the methods on ScopedObject.
-	// 创建DefaultScopedObject对象，
-	ScopedObject scopedObject = new DefaultScopedObject(cbf, this.scopedTargetSource.getTargetBeanName());
-	// 向ProxyFacotry中新增DelegatingIntroductionInterceptor拦截器
-	pf.addAdvice(new DelegatingIntroductionInterceptor(scopedObject));
+    // Add an introduction that implements only the methods on ScopedObject.
+    // 创建DefaultScopedObject对象，
+    ScopedObject scopedObject = new DefaultScopedObject(cbf, this.scopedTargetSource.getTargetBeanName());
+    // 向ProxyFacotry中新增DelegatingIntroductionInterceptor拦截器
+    pf.addAdvice(new DelegatingIntroductionInterceptor(scopedObject));
 
-	// Add the AopInfrastructureBean marker to indicate that the scoped proxy
-	// itself is not subject to auto-proxying! Only its target bean is.
-	pf.addInterface(AopInfrastructureBean.class);
+    // Add the AopInfrastructureBean marker to indicate that the scoped proxy
+    // itself is not subject to auto-proxying! Only its target bean is.
+    pf.addInterface(AopInfrastructureBean.class);
 
-	// 创建代理对象并绑定到proxy属性中
-	this.proxy = pf.getProxy(cbf.getBeanClassLoader());
+    // 创建代理对象并绑定到proxy属性中
+    this.proxy = pf.getProxy(cbf.getBeanClassLoader());
 }
 ```
 
@@ -341,9 +341,9 @@ public void setBeanFactory(BeanFactory beanFactory) {
 #### getProxy()
 
 ```java
-	public Object getProxy(@Nullable ClassLoader classLoader) {
-		return createAopProxy().getProxy(classLoader);
-	}
+    public Object getProxy(@Nullable ClassLoader classLoader) {
+        return createAopProxy().getProxy(classLoader);
+    }
 ```
 
 该创建proxy主要通过`createAopProxy()`方法创建的类来实现。
@@ -351,12 +351,12 @@ public void setBeanFactory(BeanFactory beanFactory) {
 #### createAopProxy()
 
 ```java
-	protected final synchronized AopProxy createAopProxy() {
-		if (!this.active) {
-			activate();
-		}
-		return getAopProxyFactory().createAopProxy(this);
-	}
+    protected final synchronized AopProxy createAopProxy() {
+        if (!this.active) {
+            activate();
+        }
+        return getAopProxyFactory().createAopProxy(this);
+    }
 ```
 
 `getAopProxyFactory()`方法创建了工厂类对象，这里使用了`DefaultAopProxyFactory`类来作为默认的工厂类对象。我们知道，spring有两种代理方式：
@@ -375,28 +375,28 @@ public void setBeanFactory(BeanFactory beanFactory) {
 
 ```java
 public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
-		if (!NativeDetector.inNativeImage() &&
-				(config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config))) {
-			// 获取被代理对象的class
-			Class<?> targetClass = config.getTargetClass();
-			if (targetClass == null) {
-				throw new AopConfigException("TargetSource cannot determine target class: " +
-						"Either an interface or a target is required for proxy creation.");
-			}
-			// 使用jdk的代理方式需要满足一下条件：
-			// 1. 是接口
-			// 2. 是代理的class
-			// 3. 是lambada表达式的class对象
-			if (targetClass.isInterface() || Proxy.isProxyClass(targetClass) || ClassUtils.isLambdaClass(targetClass)) {
-				return new JdkDynamicAopProxy(config);
-			}
-			// 其他情况使用Cglib
-			return new ObjenesisCglibAopProxy(config);
-		}
-		else {
-			return new JdkDynamicAopProxy(config);
-		}
-	}
+        if (!NativeDetector.inNativeImage() &&
+                (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config))) {
+            // 获取被代理对象的class
+            Class<?> targetClass = config.getTargetClass();
+            if (targetClass == null) {
+                throw new AopConfigException("TargetSource cannot determine target class: " +
+                        "Either an interface or a target is required for proxy creation.");
+            }
+            // 使用jdk的代理方式需要满足一下条件：
+            // 1. 是接口
+            // 2. 是代理的class
+            // 3. 是lambada表达式的class对象
+            if (targetClass.isInterface() || Proxy.isProxyClass(targetClass) || ClassUtils.isLambdaClass(targetClass)) {
+                return new JdkDynamicAopProxy(config);
+            }
+            // 其他情况使用Cglib
+            return new ObjenesisCglibAopProxy(config);
+        }
+        else {
+            return new JdkDynamicAopProxy(config);
+        }
+    }
 ```
 
 这里我们主要关注下cglib的创建方式，因为对于被代理对象是接口的情况，其实我感觉在日常中使用的是比较少的，所以我们关注cglib创建方法。
@@ -409,77 +409,77 @@ public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException 
 
 ```java
 public Object getProxy(@Nullable ClassLoader classLoader) {
-	if (logger.isTraceEnabled()) {
-		logger.trace("Creating CGLIB proxy: " + this.advised.getTargetSource());
-	}
+    if (logger.isTraceEnabled()) {
+        logger.trace("Creating CGLIB proxy: " + this.advised.getTargetSource());
+    }
 
-	try {
-		// 获取被代理对象的类型
-		Class<?> rootClass = this.advised.getTargetClass();
-		Assert.state(rootClass != null, "Target class must be available for creating a CGLIB proxy");
+    try {
+        // 获取被代理对象的类型
+        Class<?> rootClass = this.advised.getTargetClass();
+        Assert.state(rootClass != null, "Target class must be available for creating a CGLIB proxy");
 
-		// 被代理对象
-		Class<?> proxySuperClass = rootClass;
-		// 判断对象的名称中是否包含了$$, 因此判断是否本身为代理生成的class
-		if (rootClass.getName().contains(ClassUtils.CGLIB_CLASS_SEPARATOR)) {
-			// 获取超类
-			proxySuperClass = rootClass.getSuperclass();
-			// 获取接口列表
-			Class<?>[] additionalInterfaces = rootClass.getInterfaces();
-			// 将接口列表加入到advised对象中
-			for (Class<?> additionalInterface : additionalInterfaces) {
-				this.advised.addInterface(additionalInterface);
-			}
-		}
+        // 被代理对象
+        Class<?> proxySuperClass = rootClass;
+        // 判断对象的名称中是否包含了$$, 因此判断是否本身为代理生成的class
+        if (rootClass.getName().contains(ClassUtils.CGLIB_CLASS_SEPARATOR)) {
+            // 获取超类
+            proxySuperClass = rootClass.getSuperclass();
+            // 获取接口列表
+            Class<?>[] additionalInterfaces = rootClass.getInterfaces();
+            // 将接口列表加入到advised对象中
+            for (Class<?> additionalInterface : additionalInterfaces) {
+                this.advised.addInterface(additionalInterface);
+            }
+        }
 
-		// Validate the class, writing log messages as necessary.
-		// 验证class
-		validateClassIfNecessary(proxySuperClass, classLoader);
+        // Validate the class, writing log messages as necessary.
+        // 验证class
+        validateClassIfNecessary(proxySuperClass, classLoader);
 
-		// Configure CGLIB Enhancer...
-		Enhancer enhancer = createEnhancer();
-		if (classLoader != null) {
-			// 设置classloader对象
-			enhancer.setClassLoader(classLoader);
-			if (classLoader instanceof SmartClassLoader &&
-					((SmartClassLoader) classLoader).isClassReloadable(proxySuperClass)) {
-				enhancer.setUseCache(false);
-			}
-		}
-		// 设置被代理的class对象
-		enhancer.setSuperclass(proxySuperClass);
-		// 设置代理对象class的接口列表
-		enhancer.setInterfaces(AopProxyUtils.completeProxiedInterfaces(this.advised));
-		// 设置命名策略
-		enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
-		// 设置生成策略
-		enhancer.setStrategy(new ClassLoaderAwareGeneratorStrategy(classLoader));
+        // Configure CGLIB Enhancer...
+        Enhancer enhancer = createEnhancer();
+        if (classLoader != null) {
+            // 设置classloader对象
+            enhancer.setClassLoader(classLoader);
+            if (classLoader instanceof SmartClassLoader &&
+                    ((SmartClassLoader) classLoader).isClassReloadable(proxySuperClass)) {
+                enhancer.setUseCache(false);
+            }
+        }
+        // 设置被代理的class对象
+        enhancer.setSuperclass(proxySuperClass);
+        // 设置代理对象class的接口列表
+        enhancer.setInterfaces(AopProxyUtils.completeProxiedInterfaces(this.advised));
+        // 设置命名策略
+        enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
+        // 设置生成策略
+        enhancer.setStrategy(new ClassLoaderAwareGeneratorStrategy(classLoader));
 
-		// 获取回调类列表
-		Callback[] callbacks = getCallbacks(rootClass);
-		Class<?>[] types = new Class<?>[callbacks.length];
-		for (int x = 0; x < types.length; x++) {
-			types[x] = callbacks[x].getClass();
-		}
-		// 设置filter, 在代理的过程中，用于判断那些方法不被代理
-		// fixedInterceptorMap only populated at this point, after getCallbacks call above
-		enhancer.setCallbackFilter(new ProxyCallbackFilter(
-				this.advised.getConfigurationOnlyCopy(), this.fixedInterceptorMap, this.fixedInterceptorOffset));
-		enhancer.setCallbackTypes(types);
+        // 获取回调类列表
+        Callback[] callbacks = getCallbacks(rootClass);
+        Class<?>[] types = new Class<?>[callbacks.length];
+        for (int x = 0; x < types.length; x++) {
+            types[x] = callbacks[x].getClass();
+        }
+        // 设置filter, 在代理的过程中，用于判断那些方法不被代理
+        // fixedInterceptorMap only populated at this point, after getCallbacks call above
+        enhancer.setCallbackFilter(new ProxyCallbackFilter(
+                this.advised.getConfigurationOnlyCopy(), this.fixedInterceptorMap, this.fixedInterceptorOffset));
+        enhancer.setCallbackTypes(types);
 
-		// Generate the proxy class and create a proxy instance.
-		// 创建代理对象
-		return createProxyClassAndInstance(enhancer, callbacks);
-	}
-	catch (CodeGenerationException | IllegalArgumentException ex) {
-		throw new AopConfigException("Could not generate CGLIB subclass of " + this.advised.getTargetClass() +
-				": Common causes of this problem include using a final class or a non-visible class",
-				ex);
-	}
-	catch (Throwable ex) {
-		// TargetSource.getTarget() failed
-		throw new AopConfigException("Unexpected AOP exception", ex);
-	}
+        // Generate the proxy class and create a proxy instance.
+        // 创建代理对象
+        return createProxyClassAndInstance(enhancer, callbacks);
+    }
+    catch (CodeGenerationException | IllegalArgumentException ex) {
+        throw new AopConfigException("Could not generate CGLIB subclass of " + this.advised.getTargetClass() +
+                ": Common causes of this problem include using a final class or a non-visible class",
+                ex);
+    }
+    catch (Throwable ex) {
+        // TargetSource.getTarget() failed
+        throw new AopConfigException("Unexpected AOP exception", ex);
+    }
 }
 ```
 
@@ -487,40 +487,40 @@ public Object getProxy(@Nullable ClassLoader classLoader) {
 
 ```java
 protected Object createProxyClassAndInstance(Enhancer enhancer, Callback[] callbacks) {
-	// 生成代理的class并加载class
-	Class<?> proxyClass = enhancer.createClass();
-	Object proxyInstance = null;
+    // 生成代理的class并加载class
+    Class<?> proxyClass = enhancer.createClass();
+    Object proxyInstance = null;
 
-	if (objenesis.isWorthTrying()) {
-		try {
-			// 创建代理对象
-			proxyInstance = objenesis.newInstance(proxyClass, enhancer.getUseCache());
-		}
-		catch (Throwable ex) {
-			logger.debug("Unable to instantiate proxy using Objenesis, " +
-					"falling back to regular proxy construction", ex);
-		}
-	}
+    if (objenesis.isWorthTrying()) {
+        try {
+            // 创建代理对象
+            proxyInstance = objenesis.newInstance(proxyClass, enhancer.getUseCache());
+        }
+        catch (Throwable ex) {
+            logger.debug("Unable to instantiate proxy using Objenesis, " +
+                    "falling back to regular proxy construction", ex);
+        }
+    }
 
-	// 如果代理对象创建失败, 则通过构造器模式创建
-	if (proxyInstance == null) {
-		// Regular instantiation via default constructor...
-		try {
-			Constructor<?> ctor = (this.constructorArgs != null ?
-					proxyClass.getDeclaredConstructor(this.constructorArgTypes) :
-					proxyClass.getDeclaredConstructor());
-			ReflectionUtils.makeAccessible(ctor);
-			proxyInstance = (this.constructorArgs != null ?
-					ctor.newInstance(this.constructorArgs) : ctor.newInstance());
-		}
-		catch (Throwable ex) {
-			throw new AopConfigException("Unable to instantiate proxy using Objenesis, " +
-					"and regular proxy instantiation via default constructor fails as well", ex);
-		}
-	}
-	// 为对象设置回调对象列表
-	((Factory) proxyInstance).setCallbacks(callbacks);
-	return proxyInstance;
+    // 如果代理对象创建失败, 则通过构造器模式创建
+    if (proxyInstance == null) {
+        // Regular instantiation via default constructor...
+        try {
+            Constructor<?> ctor = (this.constructorArgs != null ?
+                    proxyClass.getDeclaredConstructor(this.constructorArgTypes) :
+                    proxyClass.getDeclaredConstructor());
+            ReflectionUtils.makeAccessible(ctor);
+            proxyInstance = (this.constructorArgs != null ?
+                    ctor.newInstance(this.constructorArgs) : ctor.newInstance());
+        }
+        catch (Throwable ex) {
+            throw new AopConfigException("Unable to instantiate proxy using Objenesis, " +
+                    "and regular proxy instantiation via default constructor fails as well", ex);
+        }
+    }
+    // 为对象设置回调对象列表
+    ((Factory) proxyInstance).setCallbacks(callbacks);
+    return proxyInstance;
 ```
 
 ![](../../../../../assets/2023-05-04-17-45-16-image.png)
@@ -537,13 +537,13 @@ protected Object createProxyClassAndInstance(Enhancer enhancer, Callback[] callb
 
 ```java
 Object scopedInstance = scope.get(beanName, () -> {
-	beforePrototypeCreation(beanName);
-	try {
-		return createBean(beanName, mbd, args);
-	}
-	finally {
-		afterPrototypeCreation(beanName);
-	}
+    beforePrototypeCreation(beanName);
+    try {
+        return createBean(beanName, mbd, args);
+    }
+    finally {
+        afterPrototypeCreation(beanName);
+    }
 });
 ```
 
@@ -553,17 +553,17 @@ Object scopedInstance = scope.get(beanName, () -> {
 
 ```java
 public Object get(String name, ObjectFactory<?> objectFactory) {
-	// 加入缓存
-	BeanLifecycleWrapper value = this.cache.put(name, new BeanLifecycleWrapper(name, objectFactory));
-	// 加入锁信息
-	this.locks.putIfAbsent(name, new ReentrantReadWriteLock());
-	try {
-		return value.getBean();
-	}
-	catch (RuntimeException e) {
-		this.errors.put(name, e);
-		throw e;
-	}
+    // 加入缓存
+    BeanLifecycleWrapper value = this.cache.put(name, new BeanLifecycleWrapper(name, objectFactory));
+    // 加入锁信息
+    this.locks.putIfAbsent(name, new ReentrantReadWriteLock());
+    try {
+        return value.getBean();
+    }
+    catch (RuntimeException e) {
+        this.errors.put(name, e);
+        throw e;
+    }
 }
 ```
 
@@ -579,17 +579,17 @@ public Object get(String name, ObjectFactory<?> objectFactory) {
 
 ```java
 public Object getBean() {
-	// 判断bean是否已经创建, 如果没有创建，则直接创建
-	if (this.bean == null) {
-		// 锁定名称，让统一时间只有一个线程创建bean
-		synchronized (this.name) {
-			// 如果bean为空，则调用ObjectFactory创建bean
-			if (this.bean == null) {
-				this.bean = this.objectFactory.getObject();
-			}
-		}
-	}
-	return this.bean;
+    // 判断bean是否已经创建, 如果没有创建，则直接创建
+    if (this.bean == null) {
+        // 锁定名称，让统一时间只有一个线程创建bean
+        synchronized (this.name) {
+            // 如果bean为空，则调用ObjectFactory创建bean
+            if (this.bean == null) {
+                this.bean = this.objectFactory.getObject();
+            }
+        }
+    }
+    return this.bean;
 }
 ```
 
@@ -602,26 +602,26 @@ public Object getBean() {
 ### RefreshEventListener
 
 ```java
-	@Override
-	public void onApplicationEvent(ApplicationEvent event) {
-		if (event instanceof ApplicationReadyEvent) {
-			handle((ApplicationReadyEvent) event);
-		}
-		// 接受到刷新事件
-		else if (event instanceof RefreshEvent) {
-			handle((RefreshEvent) event);
-		}
-	}
+    @Override
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (event instanceof ApplicationReadyEvent) {
+            handle((ApplicationReadyEvent) event);
+        }
+        // 接受到刷新事件
+        else if (event instanceof RefreshEvent) {
+            handle((RefreshEvent) event);
+        }
+    }
 
 
-	public void handle(RefreshEvent event) {
-		if (this.ready.get()) { // don't handle events before app is ready
-			log.debug("Event received " + event.getEventDesc());
-			// 执行refresh操作
-			Set<String> keys = this.refresh.refresh();
-			log.info("Refresh keys changed: " + keys);
-		}
-	}
+    public void handle(RefreshEvent event) {
+        if (this.ready.get()) { // don't handle events before app is ready
+            log.debug("Event received " + event.getEventDesc());
+            // 执行refresh操作
+            Set<String> keys = this.refresh.refresh();
+            log.info("Refresh keys changed: " + keys);
+        }
+    }
 ```
 
 从代码中可以知道，在当前类中主要处理两类事件，一类是`ApplicationReadyEvent`，另一类就是`RefreshEvent`. 当接受到刷新的时候，会执行`ContextRefresher`类的刷新方法。
@@ -629,11 +629,11 @@ public Object getBean() {
 ### ContextRefresher
 
 ```java
-	public synchronized Set<String> refresh() {
-		Set<String> keys = refreshEnvironment();
-		this.scope.refreshAll();
-		return keys;
-	}
+    public synchronized Set<String> refresh() {
+        Set<String> keys = refreshEnvironment();
+        this.scope.refreshAll();
+        return keys;
+    }
 ```
 
 在刷新的过程中，主要包含了两个步骤：
@@ -647,10 +647,10 @@ public Object getBean() {
 ### RefreshScope
 
 ```java
-	public void refreshAll() {
-		super.destroy();
-		this.context.publishEvent(new RefreshScopeRefreshedEvent());
-	}
+    public void refreshAll() {
+        super.destroy();
+        this.context.publishEvent(new RefreshScopeRefreshedEvent());
+    }
 ```
 
 这里主要包含了两个步骤：
