@@ -14,73 +14,73 @@ sentinel在系统启动的时候，会根据当前使用的web类型设置对应
 @EnableConfigurationProperties(SentinelProperties.class)
 public class SentinelWebAutoConfiguration implements WebMvcConfigurer {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(SentinelWebAutoConfiguration.class);
+    private static final Logger log = LoggerFactory
+            .getLogger(SentinelWebAutoConfiguration.class);
 
-	// sentinel配置对象
-	@Autowired
-	private SentinelProperties properties;
+    // sentinel配置对象
+    @Autowired
+    private SentinelProperties properties;
 
-	// UrlCleaner对象
-	@Autowired
-	private Optional<UrlCleaner> urlCleanerOptional;
+    // UrlCleaner对象
+    @Autowired
+    private Optional<UrlCleaner> urlCleanerOptional;
 
-	// BlockExceptionHandler对象
-	@Autowired
-	private Optional<BlockExceptionHandler> blockExceptionHandlerOptional;
+    // BlockExceptionHandler对象
+    @Autowired
+    private Optional<BlockExceptionHandler> blockExceptionHandlerOptional;
 
-	// RequestOriginParser对象
-	@Autowired
-	private Optional<RequestOriginParser> requestOriginParserOptional;
+    // RequestOriginParser对象
+    @Autowired
+    private Optional<RequestOriginParser> requestOriginParserOptional;
 
-	@Bean
-	@ConditionalOnProperty(name = "spring.cloud.sentinel.filter.enabled",
-			matchIfMissing = true)
-	public SentinelWebInterceptor sentinelWebInterceptor(
-			SentinelWebMvcConfig sentinelWebMvcConfig) {
-		// 创建SentinelWebInterceptor对象
-		return new SentinelWebInterceptor(sentinelWebMvcConfig);
-	}
+    @Bean
+    @ConditionalOnProperty(name = "spring.cloud.sentinel.filter.enabled",
+            matchIfMissing = true)
+    public SentinelWebInterceptor sentinelWebInterceptor(
+            SentinelWebMvcConfig sentinelWebMvcConfig) {
+        // 创建SentinelWebInterceptor对象
+        return new SentinelWebInterceptor(sentinelWebMvcConfig);
+    }
 
-	@Bean
-	@ConditionalOnProperty(name = "spring.cloud.sentinel.filter.enabled",
-			matchIfMissing = true)
-	public SentinelWebMvcConfig sentinelWebMvcConfig() {
-		// 创建SentinelWebMvcConfig对象
-		SentinelWebMvcConfig sentinelWebMvcConfig = new SentinelWebMvcConfig();
-		// 设置http 指定method,
-		sentinelWebMvcConfig.setHttpMethodSpecify(properties.getHttpMethodSpecify());
-		sentinelWebMvcConfig.setWebContextUnify(properties.getWebContextUnify());
+    @Bean
+    @ConditionalOnProperty(name = "spring.cloud.sentinel.filter.enabled",
+            matchIfMissing = true)
+    public SentinelWebMvcConfig sentinelWebMvcConfig() {
+        // 创建SentinelWebMvcConfig对象
+        SentinelWebMvcConfig sentinelWebMvcConfig = new SentinelWebMvcConfig();
+        // 设置http 指定method,
+        sentinelWebMvcConfig.setHttpMethodSpecify(properties.getHttpMethodSpecify());
+        sentinelWebMvcConfig.setWebContextUnify(properties.getWebContextUnify());
 
-		// 如果系统中已经存在了BlockExceptionHandler对象，则以系统中的为准
-		if (blockExceptionHandlerOptional.isPresent()) {
-			blockExceptionHandlerOptional
-					.ifPresent(sentinelWebMvcConfig::setBlockExceptionHandler);
-		}
-		else {
-			// 判断是否发生了限流时，是否跳转到指定界面，如果是，则使用跳转配置
-			if (StringUtils.hasText(properties.getBlockPage())) {
-				sentinelWebMvcConfig.setBlockExceptionHandler(((request, response,
-						e) -> response.sendRedirect(properties.getBlockPage())));
-			}
-			else {
-				// 如果没有配置跳转界面，设输出指定的文字即可。
-				sentinelWebMvcConfig
-						.setBlockExceptionHandler(new DefaultBlockExceptionHandler());
-			}
-		}
+        // 如果系统中已经存在了BlockExceptionHandler对象，则以系统中的为准
+        if (blockExceptionHandlerOptional.isPresent()) {
+            blockExceptionHandlerOptional
+                    .ifPresent(sentinelWebMvcConfig::setBlockExceptionHandler);
+        }
+        else {
+            // 判断是否发生了限流时，是否跳转到指定界面，如果是，则使用跳转配置
+            if (StringUtils.hasText(properties.getBlockPage())) {
+                sentinelWebMvcConfig.setBlockExceptionHandler(((request, response,
+                        e) -> response.sendRedirect(properties.getBlockPage())));
+            }
+            else {
+                // 如果没有配置跳转界面，设输出指定的文字即可。
+                sentinelWebMvcConfig
+                        .setBlockExceptionHandler(new DefaultBlockExceptionHandler());
+            }
+        }
 
-		urlCleanerOptional.ifPresent(sentinelWebMvcConfig::setUrlCleaner);
-		requestOriginParserOptional.ifPresent(sentinelWebMvcConfig::setOriginParser);
-		return sentinelWebMvcConfig;
-	}
+        urlCleanerOptional.ifPresent(sentinelWebMvcConfig::setUrlCleaner);
+        requestOriginParserOptional.ifPresent(sentinelWebMvcConfig::setOriginParser);
+        return sentinelWebMvcConfig;
+    }
 
-	@Bean
-	@ConditionalOnProperty(name = "spring.cloud.sentinel.filter.enabled",
-			matchIfMissing = true)
-	public SentinelWebMvcConfigurer sentinelWebMvcConfigurer() {
-		return new SentinelWebMvcConfigurer();
-	}
+    @Bean
+    @ConditionalOnProperty(name = "spring.cloud.sentinel.filter.enabled",
+            matchIfMissing = true)
+    public SentinelWebMvcConfigurer sentinelWebMvcConfigurer() {
+        return new SentinelWebMvcConfigurer();
+    }
 
 }
 ```
@@ -125,8 +125,6 @@ public class CustomBlockExceptionHandler implements BlockExceptionHandler {
                 && header.indexOf("application/json") > -1;
     }
 }
-
-
 ```
 
 以此就实现了限流信息处理。
@@ -160,5 +158,3 @@ public class CustomBlockExceptionHandler implements BlockExceptionHandler {
 ```
 
 > FlowRuleManager类中loadRules的方法会覆盖已有的策略，需要注意这点。
-
-

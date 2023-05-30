@@ -122,11 +122,8 @@
   
   - 接着Authentication对象将被设置到SecurityContextHolder中，`SecurityContextRepository#saveContext`方法必须被明确的调用。并且在未来请求中，将会自动绑定到`SecurityContext`中
   
-  - 
-    `RememberMeServices.loginSuccess`方法被执行，如果没有设置rememberme，则不会执行任何操作
+  - `RememberMeServices.loginSuccess`方法被执行，如果没有设置rememberme，则不会执行任何操作
   
   - `ApplicationEventPublisher`发送一个`InteractiveAuthenticationSuccessEvent`事件
   
   - `AuthenticationSuccessHandler`类被执行
-
-

@@ -14,18 +14,18 @@
 
 ```java
 builder.sources(BootstrapImportSelectorConfiguration.class);
-		final ConfigurableApplicationContext context = builder.run();
-		// gh-214 using spring.application.name=bootstrap to set the context id via
-		// `ContextIdApplicationContextInitializer` prevents apps from getting the actual
-		// spring.application.name
-		// during the bootstrap phase.
-		context.setId("bootstrap");
-		// Make the bootstrap context a parent of the app context
-		addAncestorInitializer(application, context);
-		// It only has properties in it now that we don't want in the parent so remove
-		// it (and it will be added back later)
-		bootstrapProperties.remove(BOOTSTRAP_PROPERTY_SOURCE_NAME);
-		mergeDefaultProperties(environment.getPropertySources(), bootstrapProperties);
+        final ConfigurableApplicationContext context = builder.run();
+        // gh-214 using spring.application.name=bootstrap to set the context id via
+        // `ContextIdApplicationContextInitializer` prevents apps from getting the actual
+        // spring.application.name
+        // during the bootstrap phase.
+        context.setId("bootstrap");
+        // Make the bootstrap context a parent of the app context
+        addAncestorInitializer(application, context);
+        // It only has properties in it now that we don't want in the parent so remove
+        // it (and it will be added back later)
+        bootstrapProperties.remove(BOOTSTRAP_PROPERTY_SOURCE_NAME);
+        mergeDefaultProperties(environment.getPropertySources(), bootstrapProperties);
 ```
 
 通过源码可以知道，在资源中加入了`BootstrapImportSelectorConfiguration`的类型，而这个类型则是作为初始化`nacos`配置加载的入口。
@@ -37,10 +37,10 @@ builder.sources(BootstrapImportSelectorConfiguration.class);
 创建容器的方法这里需要作为重点来说明一下，因为在创建`ApplicationContext`容器的时候，会有许多内置的对象在初始化的时候就被放入到了`ApplicationContext`容器中
 
 ```java
-	private ApplicationContextFactory applicationContextFactory = ApplicationContextFactory.DEFAULT;
-	protected ConfigurableApplicationContext createApplicationContext() {
-		return this.applicationContextFactory.create(this.webApplicationType);
-	}
+    private ApplicationContextFactory applicationContextFactory = ApplicationContextFactory.DEFAULT;
+    protected ConfigurableApplicationContext createApplicationContext() {
+        return this.applicationContextFactory.create(this.webApplicationType);
+    }
 ```
 
 > 这里将相关的代码放到了一起，便于查看
@@ -48,24 +48,24 @@ builder.sources(BootstrapImportSelectorConfiguration.class);
 创建ApplicationContext对象是通过工厂模式进行创建，这个工厂对象是在程序代码中预定义的一个内部类。具体如下：
 
 ```java
-	ApplicationContextFactory DEFAULT = (webApplicationType) -> {
-		try {
-			// 通过SPI价值加载ApplicationContextFactory对象，然后通过工厂类进行ApplicationContext的创建
-			// 如果创建成功，则直接返回ApplicationContext, 否则就使用AnnotationConfigApplicationContext对象代替
-			for (ApplicationContextFactory candidate : SpringFactoriesLoader
-					.loadFactories(ApplicationContextFactory.class, ApplicationContextFactory.class.getClassLoader())) {
-				ConfigurableApplicationContext context = candidate.create(webApplicationType);
-				if (context != null) {
-					return context;
-				}
-			}
-			return new AnnotationConfigApplicationContext();
-		}
-		catch (Exception ex) {
-			throw new IllegalStateException("Unable create a default ApplicationContext instance, "
-					+ "you may need a custom ApplicationContextFactory", ex);
-		}
-	};
+    ApplicationContextFactory DEFAULT = (webApplicationType) -> {
+        try {
+            // 通过SPI价值加载ApplicationContextFactory对象，然后通过工厂类进行ApplicationContext的创建
+            // 如果创建成功，则直接返回ApplicationContext, 否则就使用AnnotationConfigApplicationContext对象代替
+            for (ApplicationContextFactory candidate : SpringFactoriesLoader
+                    .loadFactories(ApplicationContextFactory.class, ApplicationContextFactory.class.getClassLoader())) {
+                ConfigurableApplicationContext context = candidate.create(webApplicationType);
+                if (context != null) {
+                    return context;
+                }
+            }
+            return new AnnotationConfigApplicationContext();
+        }
+        catch (Exception ex) {
+            throw new IllegalStateException("Unable create a default ApplicationContext instance, "
+                    + "you may need a custom ApplicationContextFactory", ex);
+        }
+    };
 ```
 
 在这段定义中，包含了两层的意思：
@@ -82,12 +82,12 @@ builder.sources(BootstrapImportSelectorConfiguration.class);
 
 ```java
 public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry, Environment environment) {
-	Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
-	Assert.notNull(environment, "Environment must not be null");
-	this.registry = registry;
-	this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
-	// 注入处理器信息
-	AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
+    Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+    Assert.notNull(environment, "Environment must not be null");
+    this.registry = registry;
+    this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
+    // 注入处理器信息
+    AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 }
 ```
 
@@ -99,79 +99,79 @@ public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry, Environmen
 
 ```java
 public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
-			BeanDefinitionRegistry registry, @Nullable Object source) {
+            BeanDefinitionRegistry registry, @Nullable Object source) {
 
-	// 获取BeanFactory对象
-	DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
-	if (beanFactory != null) {
-		// 设置AnnotationAwareOrderComparator
-		if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
-			beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
-		}
-		// 设置 ContextAnnotationAutowireCandidateResolver
-		if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
-			beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
-		}
-	}
+    // 获取BeanFactory对象
+    DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
+    if (beanFactory != null) {
+        // 设置AnnotationAwareOrderComparator
+        if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
+            beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
+        }
+        // 设置 ContextAnnotationAutowireCandidateResolver
+        if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
+            beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
+        }
+    }
 
-	Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
+    Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
 
-	// 判断是否包含了org.springframework.context.annotation.internalConfigurationAnnotationProcessor的bean定义对象，如果没有包含
-	// 则新增ConfigurationClassPostProcessor为定义对象
-	// 这个类就很重要了，他是加载Configuration实现的重要类型
-	if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
-		RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
-		def.setSource(source);
-		beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
-	}
+    // 判断是否包含了org.springframework.context.annotation.internalConfigurationAnnotationProcessor的bean定义对象，如果没有包含
+    // 则新增ConfigurationClassPostProcessor为定义对象
+    // 这个类就很重要了，他是加载Configuration实现的重要类型
+    if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
+        RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
+        def.setSource(source);
+        beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
+    }
 
-	// 判断是否包含了org.springframework.context.annotation.internalAutowiredAnnotationProcessor的bean定义对象
-	// 如果没有，则加入AutowiredAnnotationBeanPostProcessor定义
-	if (!registry.containsBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
-		RootBeanDefinition def = new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class);
-		def.setSource(source);
-		beanDefs.add(registerPostProcessor(registry, def, AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME));
-	}
+    // 判断是否包含了org.springframework.context.annotation.internalAutowiredAnnotationProcessor的bean定义对象
+    // 如果没有，则加入AutowiredAnnotationBeanPostProcessor定义
+    if (!registry.containsBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
+        RootBeanDefinition def = new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class);
+        def.setSource(source);
+        beanDefs.add(registerPostProcessor(registry, def, AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME));
+    }
 
-	// Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
-	// 这是对JSR-250的支持，判断是否加入了org.springframework.context.annotation.internalCommonAnnotationProcessor的定义
-	// 如果没有，则加入CommonAnnotationBeanPostProcessor定义
-	if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
-		RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
-		def.setSource(source);
-		beanDefs.add(registerPostProcessor(registry, def, COMMON_ANNOTATION_PROCESSOR_BEAN_NAME));
-	}
+    // Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
+    // 这是对JSR-250的支持，判断是否加入了org.springframework.context.annotation.internalCommonAnnotationProcessor的定义
+    // 如果没有，则加入CommonAnnotationBeanPostProcessor定义
+    if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
+        RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
+        def.setSource(source);
+        beanDefs.add(registerPostProcessor(registry, def, COMMON_ANNOTATION_PROCESSOR_BEAN_NAME));
+    }
 
-	// Check for JPA support, and if present add the PersistenceAnnotationBeanPostProcessor.
-	if (jpaPresent && !registry.containsBeanDefinition(PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME)) {
-		RootBeanDefinition def = new RootBeanDefinition();
-		try {
-			def.setBeanClass(ClassUtils.forName(PERSISTENCE_ANNOTATION_PROCESSOR_CLASS_NAME,
-					AnnotationConfigUtils.class.getClassLoader()));
-		}
-		catch (ClassNotFoundException ex) {
-			throw new IllegalStateException(
-					"Cannot load optional framework class: " + PERSISTENCE_ANNOTATION_PROCESSOR_CLASS_NAME, ex);
-		}
-		def.setSource(source);
-		beanDefs.add(registerPostProcessor(registry, def, PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME));
-	}
+    // Check for JPA support, and if present add the PersistenceAnnotationBeanPostProcessor.
+    if (jpaPresent && !registry.containsBeanDefinition(PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME)) {
+        RootBeanDefinition def = new RootBeanDefinition();
+        try {
+            def.setBeanClass(ClassUtils.forName(PERSISTENCE_ANNOTATION_PROCESSOR_CLASS_NAME,
+                    AnnotationConfigUtils.class.getClassLoader()));
+        }
+        catch (ClassNotFoundException ex) {
+            throw new IllegalStateException(
+                    "Cannot load optional framework class: " + PERSISTENCE_ANNOTATION_PROCESSOR_CLASS_NAME, ex);
+        }
+        def.setSource(source);
+        beanDefs.add(registerPostProcessor(registry, def, PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME));
+    }
 
-	// org.springframework.context.event.internalEventListenerProcessor的定义
-	if (!registry.containsBeanDefinition(EVENT_LISTENER_PROCESSOR_BEAN_NAME)) {
-		RootBeanDefinition def = new RootBeanDefinition(EventListenerMethodProcessor.class);
-		def.setSource(source);
-		beanDefs.add(registerPostProcessor(registry, def, EVENT_LISTENER_PROCESSOR_BEAN_NAME));
-	}
+    // org.springframework.context.event.internalEventListenerProcessor的定义
+    if (!registry.containsBeanDefinition(EVENT_LISTENER_PROCESSOR_BEAN_NAME)) {
+        RootBeanDefinition def = new RootBeanDefinition(EventListenerMethodProcessor.class);
+        def.setSource(source);
+        beanDefs.add(registerPostProcessor(registry, def, EVENT_LISTENER_PROCESSOR_BEAN_NAME));
+    }
 
-	// org.springframework.context.event.internalEventListenerFactory的定义
-	if (!registry.containsBeanDefinition(EVENT_LISTENER_FACTORY_BEAN_NAME)) {
-		RootBeanDefinition def = new RootBeanDefinition(DefaultEventListenerFactory.class);
-		def.setSource(source);
-		beanDefs.add(registerPostProcessor(registry, def, EVENT_LISTENER_FACTORY_BEAN_NAME));
-	}
+    // org.springframework.context.event.internalEventListenerFactory的定义
+    if (!registry.containsBeanDefinition(EVENT_LISTENER_FACTORY_BEAN_NAME)) {
+        RootBeanDefinition def = new RootBeanDefinition(DefaultEventListenerFactory.class);
+        def.setSource(source);
+        beanDefs.add(registerPostProcessor(registry, def, EVENT_LISTENER_FACTORY_BEAN_NAME));
+    }
 
-	return beanDefs;
+    return beanDefs;
 }
 ```
 
@@ -180,53 +180,53 @@ public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 ### prepareContext()
 
 ```java
-	private void prepareContext(DefaultBootstrapContext bootstrapContext, ConfigurableApplicationContext context,
-			ConfigurableEnvironment environment, SpringApplicationRunListeners listeners,
-			ApplicationArguments applicationArguments, Banner printedBanner) {
-		// 设置环境配置
-		context.setEnvironment(environment);
-		// 处理容器
-		postProcessApplicationContext(context);
-		// 执行ApplicationContextInitializer中的intialize方法，处理必要参数
-		applyInitializers(context);
-		// 广播ApplicationContextInitializedEvent时间
-		listeners.contextPrepared(context);
-		// 关闭BootstrapContext容器，并准备ApplicationContext
-		bootstrapContext.close(context);
-		if (this.logStartupInfo) {
-			logStartupInfo(context.getParent() == null);
-			logStartupProfileInfo(context);
-		}
-		// 获取BeanFactory对象
-		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
-		// 注册命令行参数对象
-		beanFactory.registerSingleton("springApplicationArguments", applicationArguments);
-		// 打印banner信息
-		if (printedBanner != null) {
-			beanFactory.registerSingleton("springBootBanner", printedBanner);
-		}
-		// 设置allowBeanFefinitionOverriding参数
-		if (beanFactory instanceof AbstractAutowireCapableBeanFactory) {
-			((AbstractAutowireCapableBeanFactory) beanFactory).setAllowCircularReferences(this.allowCircularReferences);
-			if (beanFactory instanceof DefaultListableBeanFactory) {
-				((DefaultListableBeanFactory) beanFactory)
-						.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
-			}
-		}
-		// 是否懒加载，如果支持懒加载，则LazyInitializationBeanFactoryPostProcessor实例
-		if (this.lazyInitialization) {
-			context.addBeanFactoryPostProcessor(new LazyInitializationBeanFactoryPostProcessor());
-		}
-		// 新增PropertySourceOrderingBeanFactoryPostProcessor实例
-		context.addBeanFactoryPostProcessor(new PropertySourceOrderingBeanFactoryPostProcessor(context));
-		// 获取需要加载的资源列表，也即是启动源类型
-		Set<Object> sources = getAllSources();
-		Assert.notEmpty(sources, "Sources must not be empty");
-		// 加载资源
-		load(context, sources.toArray(new Object[0]));
-		// 发送事件ApplicationPreparedEvent
-		listeners.contextLoaded(context);
-	}
+    private void prepareContext(DefaultBootstrapContext bootstrapContext, ConfigurableApplicationContext context,
+            ConfigurableEnvironment environment, SpringApplicationRunListeners listeners,
+            ApplicationArguments applicationArguments, Banner printedBanner) {
+        // 设置环境配置
+        context.setEnvironment(environment);
+        // 处理容器
+        postProcessApplicationContext(context);
+        // 执行ApplicationContextInitializer中的intialize方法，处理必要参数
+        applyInitializers(context);
+        // 广播ApplicationContextInitializedEvent时间
+        listeners.contextPrepared(context);
+        // 关闭BootstrapContext容器，并准备ApplicationContext
+        bootstrapContext.close(context);
+        if (this.logStartupInfo) {
+            logStartupInfo(context.getParent() == null);
+            logStartupProfileInfo(context);
+        }
+        // 获取BeanFactory对象
+        ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+        // 注册命令行参数对象
+        beanFactory.registerSingleton("springApplicationArguments", applicationArguments);
+        // 打印banner信息
+        if (printedBanner != null) {
+            beanFactory.registerSingleton("springBootBanner", printedBanner);
+        }
+        // 设置allowBeanFefinitionOverriding参数
+        if (beanFactory instanceof AbstractAutowireCapableBeanFactory) {
+            ((AbstractAutowireCapableBeanFactory) beanFactory).setAllowCircularReferences(this.allowCircularReferences);
+            if (beanFactory instanceof DefaultListableBeanFactory) {
+                ((DefaultListableBeanFactory) beanFactory)
+                        .setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
+            }
+        }
+        // 是否懒加载，如果支持懒加载，则LazyInitializationBeanFactoryPostProcessor实例
+        if (this.lazyInitialization) {
+            context.addBeanFactoryPostProcessor(new LazyInitializationBeanFactoryPostProcessor());
+        }
+        // 新增PropertySourceOrderingBeanFactoryPostProcessor实例
+        context.addBeanFactoryPostProcessor(new PropertySourceOrderingBeanFactoryPostProcessor(context));
+        // 获取需要加载的资源列表，也即是启动源类型
+        Set<Object> sources = getAllSources();
+        Assert.notEmpty(sources, "Sources must not be empty");
+        // 加载资源
+        load(context, sources.toArray(new Object[0]));
+        // 发送事件ApplicationPreparedEvent
+        listeners.contextLoaded(context);
+    }
 ```
 
 准备工作主要是对ApplicaionContext声明周期的管理和操作，其中也设计到了SPI自定义的一些步骤，同时，在不同阶段，都会发送事件通知信息。
@@ -234,24 +234,24 @@ public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 ### load()
 
 ```java
-	protected void load(ApplicationContext context, Object[] sources) {
-		if (logger.isDebugEnabled()) {
-			logger.debug("Loading source " + StringUtils.arrayToCommaDelimitedString(sources));
-		}
-		// 创建BeanDefinitionLoader对象，该对象持有启动源信息
-		BeanDefinitionLoader loader = createBeanDefinitionLoader(getBeanDefinitionRegistry(context), sources);
-		if (this.beanNameGenerator != null) {
-			loader.setBeanNameGenerator(this.beanNameGenerator);
-		}
-		if (this.resourceLoader != null) {
-			loader.setResourceLoader(this.resourceLoader);
-		}
-		if (this.environment != null) {
-			loader.setEnvironment(this.environment);
-		}
-		// 执行加载操作
-		loader.load();
-	}
+    protected void load(ApplicationContext context, Object[] sources) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Loading source " + StringUtils.arrayToCommaDelimitedString(sources));
+        }
+        // 创建BeanDefinitionLoader对象，该对象持有启动源信息
+        BeanDefinitionLoader loader = createBeanDefinitionLoader(getBeanDefinitionRegistry(context), sources);
+        if (this.beanNameGenerator != null) {
+            loader.setBeanNameGenerator(this.beanNameGenerator);
+        }
+        if (this.resourceLoader != null) {
+            loader.setResourceLoader(this.resourceLoader);
+        }
+        if (this.environment != null) {
+            loader.setEnvironment(this.environment);
+        }
+        // 执行加载操作
+        loader.load();
+    }
 ```
 
 > 这里需要注意一下，在引入了spring-cloud-bootstrap依赖的时候，这里加载parent的容器时，这里的源只有一个: `org.springframework.cloud.bootstrap.BootstrapImportSelectorConfiguration` 这个类的来源实在parent被创建的时候自动设置进去的。
@@ -265,9 +265,9 @@ public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 在知道了处理nacos配置的入口后，则我们主要关系在执行`run()`方法的时候，会通过`refreshContext()`方法刷新容器，具体如下：
 
 ```java
-	protected void refresh(ConfigurableApplicationContext applicationContext) {
-		applicationContext.refresh();
-	}
+    protected void refresh(ConfigurableApplicationContext applicationContext) {
+        applicationContext.refresh();
+    }
 ```
 
 这里就最终调用了`ApplicationContext#refresh()`方法，因此我们只需要看对应的方法即可。
@@ -280,107 +280,106 @@ public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 
 ```java
 try {
-	...
-	// Invoke factory processors registered as beans in the context.
-	// 执行BeanFactoryPostProcessor实例的方法
-	invokeBeanFactoryPostProcessors(beanFactory);
-	...
+    ...
+    // Invoke factory processors registered as beans in the context.
+    // 执行BeanFactoryPostProcessor实例的方法
+    invokeBeanFactoryPostProcessors(beanFactory);
+    ...
 
 }
-
 ```
 
 ### invokeBeanFactoryPostProcessors()
 
 ```java
 public static void invokeBeanFactoryPostProcessors(
-			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
+            ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
 
-		Set<String> processedBeans = new HashSet<>();
+        Set<String> processedBeans = new HashSet<>();
 
-		// 判断beanFactory是否为BeanDefinitionRegistry实例
-		if (beanFactory instanceof BeanDefinitionRegistry) {
-			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
-			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
-			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
+        // 判断beanFactory是否为BeanDefinitionRegistry实例
+        if (beanFactory instanceof BeanDefinitionRegistry) {
+            BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
+            List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
+            List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
-			// 执行BeanFactoryPostProcessor实例，这里主要是对BeanFactory进行后置处理
-			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
-				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
-					BeanDefinitionRegistryPostProcessor registryProcessor =
-							(BeanDefinitionRegistryPostProcessor) postProcessor;
-					registryProcessor.postProcessBeanDefinitionRegistry(registry);
-					registryProcessors.add(registryProcessor);
-				}
-				else {
-					regularPostProcessors.add(postProcessor);
-				}
-			}
+            // 执行BeanFactoryPostProcessor实例，这里主要是对BeanFactory进行后置处理
+            for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
+                if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
+                    BeanDefinitionRegistryPostProcessor registryProcessor =
+                            (BeanDefinitionRegistryPostProcessor) postProcessor;
+                    registryProcessor.postProcessBeanDefinitionRegistry(registry);
+                    registryProcessors.add(registryProcessor);
+                }
+                else {
+                    regularPostProcessors.add(postProcessor);
+                }
+            }
 
-			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
+            List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
 
-			// 这步骤是为了获取BeanDefinitionRegistryPostProcessor相关的beanName列表
-			String[] postProcessorNames =
-					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
-			// 遍历BeanDefinitionRegistryPostProcessor名称信息
-			for (String ppName : postProcessorNames) {
-				// 判断当前beanName代表的class对象是否为PriortyOrdered的实现类
-				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
-					// 如果条件满足，则通过getBean()方法创建bean，并加入到currentRegistryProcessors集合中
-					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
-					processedBeans.add(ppName);
-				}
-			}
-			// 对BeanDefinitionRegistryPostProcessor实例列表进行优先级排序
-			sortPostProcessors(currentRegistryProcessors, beanFactory);
-			registryProcessors.addAll(currentRegistryProcessors);
-			// 执行BeanDefinitionRegistryPostProcessor实例
-			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
-			currentRegistryProcessors.clear();
+            // 这步骤是为了获取BeanDefinitionRegistryPostProcessor相关的beanName列表
+            String[] postProcessorNames =
+                    beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
+            // 遍历BeanDefinitionRegistryPostProcessor名称信息
+            for (String ppName : postProcessorNames) {
+                // 判断当前beanName代表的class对象是否为PriortyOrdered的实现类
+                if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+                    // 如果条件满足，则通过getBean()方法创建bean，并加入到currentRegistryProcessors集合中
+                    currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
+                    processedBeans.add(ppName);
+                }
+            }
+            // 对BeanDefinitionRegistryPostProcessor实例列表进行优先级排序
+            sortPostProcessors(currentRegistryProcessors, beanFactory);
+            registryProcessors.addAll(currentRegistryProcessors);
+            // 执行BeanDefinitionRegistryPostProcessor实例
+            invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
+            currentRegistryProcessors.clear();
 
-			// 获取BeanDefinitionRegistryPostProcessor实例列表，并按照Ordered排序，然后执行BeanDefinitionRegistryPostProcessor逻辑
-			postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
-			for (String ppName : postProcessorNames) {
-				if (!processedBeans.contains(ppName) && beanFactory.isTypeMatch(ppName, Ordered.class)) {
-					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
-					processedBeans.add(ppName);
-				}
-			}
-			sortPostProcessors(currentRegistryProcessors, beanFactory);
-			registryProcessors.addAll(currentRegistryProcessors);
-			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
-			currentRegistryProcessors.clear();
+            // 获取BeanDefinitionRegistryPostProcessor实例列表，并按照Ordered排序，然后执行BeanDefinitionRegistryPostProcessor逻辑
+            postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
+            for (String ppName : postProcessorNames) {
+                if (!processedBeans.contains(ppName) && beanFactory.isTypeMatch(ppName, Ordered.class)) {
+                    currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
+                    processedBeans.add(ppName);
+                }
+            }
+            sortPostProcessors(currentRegistryProcessors, beanFactory);
+            registryProcessors.addAll(currentRegistryProcessors);
+            invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
+            currentRegistryProcessors.clear();
 
-			// 如果BeanDefinitionRegistryPostProcessor没有实现任何的排序规则或者逻辑，则最后执行，优先级最低
-			boolean reiterate = true;
-			while (reiterate) {
-				reiterate = false;
-				postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
-				for (String ppName : postProcessorNames) {
-					if (!processedBeans.contains(ppName)) {
-						currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
-						processedBeans.add(ppName);
-						reiterate = true;
-					}
-				}
-				sortPostProcessors(currentRegistryProcessors, beanFactory);
-				registryProcessors.addAll(currentRegistryProcessors);
-				invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
-				currentRegistryProcessors.clear();
-			}
+            // 如果BeanDefinitionRegistryPostProcessor没有实现任何的排序规则或者逻辑，则最后执行，优先级最低
+            boolean reiterate = true;
+            while (reiterate) {
+                reiterate = false;
+                postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
+                for (String ppName : postProcessorNames) {
+                    if (!processedBeans.contains(ppName)) {
+                        currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
+                        processedBeans.add(ppName);
+                        reiterate = true;
+                    }
+                }
+                sortPostProcessors(currentRegistryProcessors, beanFactory);
+                registryProcessors.addAll(currentRegistryProcessors);
+                invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
+                currentRegistryProcessors.clear();
+            }
 
-			// Now, invoke the postProcessBeanFactory callback of all processors handled so far.
-			invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
-			invokeBeanFactoryPostProcessors(regularPostProcessors, beanFactory);
-		}
+            // Now, invoke the postProcessBeanFactory callback of all processors handled so far.
+            invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
+            invokeBeanFactoryPostProcessors(regularPostProcessors, beanFactory);
+        }
 
-		else {
-			// Invoke factory processors registered with the context instance.
-			invokeBeanFactoryPostProcessors(beanFactoryPostProcessors, beanFactory);
-		}
+        else {
+            // Invoke factory processors registered with the context instance.
+            invokeBeanFactoryPostProcessors(beanFactoryPostProcessors, beanFactory);
+        }
 
-		...
-	}
+        ...
+    }
 ```
 
 ## 4. ConfigurationClassPostProcessor
@@ -390,147 +389,147 @@ public static void invokeBeanFactoryPostProcessors(
 ### postProcessBeanDefinitionRegistry()
 
 ```java
-	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
-		// 获取编号
-		int registryId = System.identityHashCode(registry);
-		// 判断是否已经执行了post process
-		if (this.registriesPostProcessed.contains(registryId)) {
-			throw new IllegalStateException(
-					"postProcessBeanDefinitionRegistry already called on this post-processor against " + registry);
-		}
-		// 是否通过工厂类执行过注册
-		if (this.factoriesPostProcessed.contains(registryId)) {
-			throw new IllegalStateException(
-					"postProcessBeanFactory already called on this post-processor against " + registry);
-		}
-		// 将当前注册编号加入到registriesPostProcessed列表中
-		this.registriesPostProcessed.add(registryId);
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
+        // 获取编号
+        int registryId = System.identityHashCode(registry);
+        // 判断是否已经执行了post process
+        if (this.registriesPostProcessed.contains(registryId)) {
+            throw new IllegalStateException(
+                    "postProcessBeanDefinitionRegistry already called on this post-processor against " + registry);
+        }
+        // 是否通过工厂类执行过注册
+        if (this.factoriesPostProcessed.contains(registryId)) {
+            throw new IllegalStateException(
+                    "postProcessBeanFactory already called on this post-processor against " + registry);
+        }
+        // 将当前注册编号加入到registriesPostProcessed列表中
+        this.registriesPostProcessed.add(registryId);
 
-		// 指定bean定义配置
-		processConfigBeanDefinitions(registry);
-	}
+        // 指定bean定义配置
+        processConfigBeanDefinitions(registry);
+    }
 ```
 
 ### processConfigBeanDefinitions()
 
 ```java
 public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
-	List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
-	// 获取registry中已经注册的BeanDefinition名称列表
-	String[] candidateNames = registry.getBeanDefinitionNames();
+    List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
+    // 获取registry中已经注册的BeanDefinition名称列表
+    String[] candidateNames = registry.getBeanDefinitionNames();
 
-	//遍历bean名称
-	for (String beanName : candidateNames) {
-		// 获取对应的beanName的类型定义信息
-		BeanDefinition beanDef = registry.getBeanDefinition(beanName);
-		// 判断是否包含属性org.springframework.context.annotation.ConfigurationClassPostProcessor.configurationClass
-		if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
-			}
-		}
-		// 判断是否与Configuration类的加载逻辑，主要是对@Configuration逻辑的处理
-		// 若成立，则加入到configCandidates列表中
-		else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
-			configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
-		}
-	}
+    //遍历bean名称
+    for (String beanName : candidateNames) {
+        // 获取对应的beanName的类型定义信息
+        BeanDefinition beanDef = registry.getBeanDefinition(beanName);
+        // 判断是否包含属性org.springframework.context.annotation.ConfigurationClassPostProcessor.configurationClass
+        if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
+            }
+        }
+        // 判断是否与Configuration类的加载逻辑，主要是对@Configuration逻辑的处理
+        // 若成立，则加入到configCandidates列表中
+        else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
+            configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
+        }
+    }
 
-	// 如果configCandidates为空，则表示没有Configuration类需要处理
-	if (configCandidates.isEmpty()) {
-		return;
-	}
+    // 如果configCandidates为空，则表示没有Configuration类需要处理
+    if (configCandidates.isEmpty()) {
+        return;
+    }
 
-	// 根据@Order注解进行排序
-	configCandidates.sort((bd1, bd2) -> {
-		int i1 = ConfigurationClassUtils.getOrder(bd1.getBeanDefinition());
-		int i2 = ConfigurationClassUtils.getOrder(bd2.getBeanDefinition());
-		return Integer.compare(i1, i2);
-	});
+    // 根据@Order注解进行排序
+    configCandidates.sort((bd1, bd2) -> {
+        int i1 = ConfigurationClassUtils.getOrder(bd1.getBeanDefinition());
+        int i2 = ConfigurationClassUtils.getOrder(bd2.getBeanDefinition());
+        return Integer.compare(i1, i2);
+    });
 
-	// Detect any custom bean name generation strategy supplied through the enclosing application context
-	SingletonBeanRegistry sbr = null;
-	if (registry instanceof SingletonBeanRegistry) {
-		sbr = (SingletonBeanRegistry) registry;
-		// 这里主要是为了探测自定义bean名称生成策略
-		if (!this.localBeanNameGeneratorSet) {
-			BeanNameGenerator generator = (BeanNameGenerator) sbr.getSingleton(
-					AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR);
-			if (generator != null) {
-				this.componentScanBeanNameGenerator = generator;
-				this.importBeanNameGenerator = generator;
-			}
-		}
-	}
+    // Detect any custom bean name generation strategy supplied through the enclosing application context
+    SingletonBeanRegistry sbr = null;
+    if (registry instanceof SingletonBeanRegistry) {
+        sbr = (SingletonBeanRegistry) registry;
+        // 这里主要是为了探测自定义bean名称生成策略
+        if (!this.localBeanNameGeneratorSet) {
+            BeanNameGenerator generator = (BeanNameGenerator) sbr.getSingleton(
+                    AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR);
+            if (generator != null) {
+                this.componentScanBeanNameGenerator = generator;
+                this.importBeanNameGenerator = generator;
+            }
+        }
+    }
 
-	if (this.environment == null) {
-		this.environment = new StandardEnvironment();
-	}
+    if (this.environment == null) {
+        this.environment = new StandardEnvironment();
+    }
 
-	// 创建ConfigurationClassParser对象，该对象用于解析@Configuration注解有关的配置类信息
-	ConfigurationClassParser parser = new ConfigurationClassParser(
-			this.metadataReaderFactory, this.problemReporter, this.environment,
-			this.resourceLoader, this.componentScanBeanNameGenerator, registry);
+    // 创建ConfigurationClassParser对象，该对象用于解析@Configuration注解有关的配置类信息
+    ConfigurationClassParser parser = new ConfigurationClassParser(
+            this.metadataReaderFactory, this.problemReporter, this.environment,
+            this.resourceLoader, this.componentScanBeanNameGenerator, registry);
 
-	Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
-	Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
-	do {
-		StartupStep processConfig = this.applicationStartup.start("spring.context.config-classes.parse");
-		// 开始解析Configuration配置类
-		parser.parse(candidates);
-		parser.validate();
+    Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
+    Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
+    do {
+        StartupStep processConfig = this.applicationStartup.start("spring.context.config-classes.parse");
+        // 开始解析Configuration配置类
+        parser.parse(candidates);
+        parser.validate();
 
-		Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
-		configClasses.removeAll(alreadyParsed);
+        Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
+        configClasses.removeAll(alreadyParsed);
 
-		// Read the model and create bean definitions based on its content
-		if (this.reader == null) {
-			this.reader = new ConfigurationClassBeanDefinitionReader(
-					registry, this.sourceExtractor, this.resourceLoader, this.environment,
-					this.importBeanNameGenerator, parser.getImportRegistry());
-		}
-		// 在parse类中，实现了对Configuration类型的加载，当有了这些Configuration类型之后
-		// 则需要将Configuration中包含有@Bean这些方法解析为BeanDefinition对象，以便于对这些类型进行初始化
-		this.reader.loadBeanDefinitions(configClasses);
-		alreadyParsed.addAll(configClasses);
-		processConfig.tag("classCount", () -> String.valueOf(configClasses.size())).end();
+        // Read the model and create bean definitions based on its content
+        if (this.reader == null) {
+            this.reader = new ConfigurationClassBeanDefinitionReader(
+                    registry, this.sourceExtractor, this.resourceLoader, this.environment,
+                    this.importBeanNameGenerator, parser.getImportRegistry());
+        }
+        // 在parse类中，实现了对Configuration类型的加载，当有了这些Configuration类型之后
+        // 则需要将Configuration中包含有@Bean这些方法解析为BeanDefinition对象，以便于对这些类型进行初始化
+        this.reader.loadBeanDefinitions(configClasses);
+        alreadyParsed.addAll(configClasses);
+        processConfig.tag("classCount", () -> String.valueOf(configClasses.size())).end();
 
-		candidates.clear();
-		if (registry.getBeanDefinitionCount() > candidateNames.length) {
-			String[] newCandidateNames = registry.getBeanDefinitionNames();
-			Set<String> oldCandidateNames = new HashSet<>(Arrays.asList(candidateNames));
-			Set<String> alreadyParsedClasses = new HashSet<>();
-			// 将已经加载的配置类放到已经解析的列表中
-			for (ConfigurationClass configurationClass : alreadyParsed) {
-				alreadyParsedClasses.add(configurationClass.getMetadata().getClassName());
-			}
-			// 新增配置类型，则加入到candidates列表中
-			for (String candidateName : newCandidateNames) {
-				if (!oldCandidateNames.contains(candidateName)) {
-					BeanDefinition bd = registry.getBeanDefinition(candidateName);
-					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bd, this.metadataReaderFactory) &&
-							!alreadyParsedClasses.contains(bd.getBeanClassName())) {
-						candidates.add(new BeanDefinitionHolder(bd, candidateName));
-					}
-				}
-			}
-			// 将新的参与类复制，再次进行遍历
-			candidateNames = newCandidateNames;
-		}
-	}
-	// 循环遍历
-	while (!candidates.isEmpty());
+        candidates.clear();
+        if (registry.getBeanDefinitionCount() > candidateNames.length) {
+            String[] newCandidateNames = registry.getBeanDefinitionNames();
+            Set<String> oldCandidateNames = new HashSet<>(Arrays.asList(candidateNames));
+            Set<String> alreadyParsedClasses = new HashSet<>();
+            // 将已经加载的配置类放到已经解析的列表中
+            for (ConfigurationClass configurationClass : alreadyParsed) {
+                alreadyParsedClasses.add(configurationClass.getMetadata().getClassName());
+            }
+            // 新增配置类型，则加入到candidates列表中
+            for (String candidateName : newCandidateNames) {
+                if (!oldCandidateNames.contains(candidateName)) {
+                    BeanDefinition bd = registry.getBeanDefinition(candidateName);
+                    if (ConfigurationClassUtils.checkConfigurationClassCandidate(bd, this.metadataReaderFactory) &&
+                            !alreadyParsedClasses.contains(bd.getBeanClassName())) {
+                        candidates.add(new BeanDefinitionHolder(bd, candidateName));
+                    }
+                }
+            }
+            // 将新的参与类复制，再次进行遍历
+            candidateNames = newCandidateNames;
+        }
+    }
+    // 循环遍历
+    while (!candidates.isEmpty());
 
-	// Register the ImportRegistry as a bean in order to support ImportAware @Configuration classes
-	if (sbr != null && !sbr.containsSingleton(IMPORT_REGISTRY_BEAN_NAME)) {
-		sbr.registerSingleton(IMPORT_REGISTRY_BEAN_NAME, parser.getImportRegistry());
-	}
+    // Register the ImportRegistry as a bean in order to support ImportAware @Configuration classes
+    if (sbr != null && !sbr.containsSingleton(IMPORT_REGISTRY_BEAN_NAME)) {
+        sbr.registerSingleton(IMPORT_REGISTRY_BEAN_NAME, parser.getImportRegistry());
+    }
 
-	if (this.metadataReaderFactory instanceof CachingMetadataReaderFactory) {
-		// Clear cache in externally provided MetadataReaderFactory; this is a no-op
-		// for a shared cache since it'll be cleared by the ApplicationContext.
-		((CachingMetadataReaderFactory) this.metadataReaderFactory).clearCache();
-	}
+    if (this.metadataReaderFactory instanceof CachingMetadataReaderFactory) {
+        // Clear cache in externally provided MetadataReaderFactory; this is a no-op
+        // for a shared cache since it'll be cleared by the ApplicationContext.
+        ((CachingMetadataReaderFactory) this.metadataReaderFactory).clearCache();
+    }
 }
 ```
 
@@ -542,36 +541,36 @@ public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
 
 ```java
 public void parse(Set<BeanDefinitionHolder> configCandidates) {
-		// 开始遍历Configuration的类定义信息
-		for (BeanDefinitionHolder holder : configCandidates) {
-			// 获取Configuration的BeanDefinition信息
-			BeanDefinition bd = holder.getBeanDefinition();
-			try {
-				// 判断是否为AnnotatedBeanDefinition, 如果是，则执行对应逻辑
-				// 这里在bootstrap阶段，对应的类型为BootstrapImportSelectorConfiguration,
-				// 该类因为涉及到注解的使用信息，因此为AnnotatedBeanDefinition定义
-				// parse()操作会将对应的@Configuration以及@Import等注解解析为可执行的实例
-				if (bd instanceof AnnotatedBeanDefinition) {
-					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
-				}
-				else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
-					parse(((AbstractBeanDefinition) bd).getBeanClass(), holder.getBeanName());
-				}
-				else {
-					parse(bd.getBeanClassName(), holder.getBeanName());
-				}
-			}
-			catch (BeanDefinitionStoreException ex) {
-				throw ex;
-			}
-			catch (Throwable ex) {
-				throw new BeanDefinitionStoreException(
-						"Failed to parse configuration class [" + bd.getBeanClassName() + "]", ex);
-			}
-		}
+        // 开始遍历Configuration的类定义信息
+        for (BeanDefinitionHolder holder : configCandidates) {
+            // 获取Configuration的BeanDefinition信息
+            BeanDefinition bd = holder.getBeanDefinition();
+            try {
+                // 判断是否为AnnotatedBeanDefinition, 如果是，则执行对应逻辑
+                // 这里在bootstrap阶段，对应的类型为BootstrapImportSelectorConfiguration,
+                // 该类因为涉及到注解的使用信息，因此为AnnotatedBeanDefinition定义
+                // parse()操作会将对应的@Configuration以及@Import等注解解析为可执行的实例
+                if (bd instanceof AnnotatedBeanDefinition) {
+                    parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
+                }
+                else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
+                    parse(((AbstractBeanDefinition) bd).getBeanClass(), holder.getBeanName());
+                }
+                else {
+                    parse(bd.getBeanClassName(), holder.getBeanName());
+                }
+            }
+            catch (BeanDefinitionStoreException ex) {
+                throw ex;
+            }
+            catch (Throwable ex) {
+                throw new BeanDefinitionStoreException(
+                        "Failed to parse configuration class [" + bd.getBeanClassName() + "]", ex);
+            }
+        }
 
-		this.deferredImportSelectorHandler.process();
-	}
+        this.deferredImportSelectorHandler.process();
+    }
 ```
 
 > 这里没有介绍详细的过程，是因为这个属于spring-boot注解加载过程，因此不在这次的讨论范围内，可以参考加载的过程
@@ -582,23 +581,23 @@ public void parse(Set<BeanDefinitionHolder> configCandidates) {
 
 ```java
 public void process() {
-	// 获取Import列表。当加载source中包含了@Import注解的时候，则不为空
-	List<DeferredImportSelectorHolder> deferredImports = this.deferredImportSelectors;
-	this.deferredImportSelectors = null;
-	try {
-		if (deferredImports != null) {
-			// 创建处理@Import逻辑的类实例
-			DeferredImportSelectorGroupingHandler handler = new DeferredImportSelectorGroupingHandler();
-			deferredImports.sort(DEFERRED_IMPORT_COMPARATOR);
-			// 将DeferredImportSelectorHolder类型注册到deferredImports列表中
-			deferredImports.forEach(handler::register);
-			// 处理@Import逻辑
-			handler.processGroupImports();
-		}
-	}
-	finally {
-		this.deferredImportSelectors = new ArrayList<>();
-	}
+    // 获取Import列表。当加载source中包含了@Import注解的时候，则不为空
+    List<DeferredImportSelectorHolder> deferredImports = this.deferredImportSelectors;
+    this.deferredImportSelectors = null;
+    try {
+        if (deferredImports != null) {
+            // 创建处理@Import逻辑的类实例
+            DeferredImportSelectorGroupingHandler handler = new DeferredImportSelectorGroupingHandler();
+            deferredImports.sort(DEFERRED_IMPORT_COMPARATOR);
+            // 将DeferredImportSelectorHolder类型注册到deferredImports列表中
+            deferredImports.forEach(handler::register);
+            // 处理@Import逻辑
+            handler.processGroupImports();
+        }
+    }
+    finally {
+        this.deferredImportSelectors = new ArrayList<>();
+    }
 }
 ```
 
@@ -606,30 +605,30 @@ public void process() {
 
 ```java
 public void processGroupImports() {
-	// 开始遍历DeferredImportSelectorGrouping信息，
-	for (DeferredImportSelectorGrouping grouping : this.groupings.values()) {
-		Predicate<String> exclusionFilter = grouping.getCandidateFilter();
-		// 从grouping中获取Imports列表，这里需要主要关注下getImports()方法
-		// 因为一个Configuration类可能会引入很多的配置类，然后会遍历去导入
-		// 其他的配置类，这里也是nacos加载配置扩展的点。
-		grouping.getImports().forEach(entry -> {
-			ConfigurationClass configurationClass = this.configurationClasses.get(entry.getMetadata());
-			try {
-				// 加载其他的配置类，和上面逻辑基本一致
-				processImports(configurationClass, asSourceClass(configurationClass, exclusionFilter),
-						Collections.singleton(asSourceClass(entry.getImportClassName(), exclusionFilter)),
-						exclusionFilter, false);
-			}
-			catch (BeanDefinitionStoreException ex) {
-				throw ex;
-			}
-			catch (Throwable ex) {
-				throw new BeanDefinitionStoreException(
-						"Failed to process import candidates for configuration class [" +
-								configurationClass.getMetadata().getClassName() + "]", ex);
-			}
-		});
-	}
+    // 开始遍历DeferredImportSelectorGrouping信息，
+    for (DeferredImportSelectorGrouping grouping : this.groupings.values()) {
+        Predicate<String> exclusionFilter = grouping.getCandidateFilter();
+        // 从grouping中获取Imports列表，这里需要主要关注下getImports()方法
+        // 因为一个Configuration类可能会引入很多的配置类，然后会遍历去导入
+        // 其他的配置类，这里也是nacos加载配置扩展的点。
+        grouping.getImports().forEach(entry -> {
+            ConfigurationClass configurationClass = this.configurationClasses.get(entry.getMetadata());
+            try {
+                // 加载其他的配置类，和上面逻辑基本一致
+                processImports(configurationClass, asSourceClass(configurationClass, exclusionFilter),
+                        Collections.singleton(asSourceClass(entry.getImportClassName(), exclusionFilter)),
+                        exclusionFilter, false);
+            }
+            catch (BeanDefinitionStoreException ex) {
+                throw ex;
+            }
+            catch (Throwable ex) {
+                throw new BeanDefinitionStoreException(
+                        "Failed to process import candidates for configuration class [" +
+                                configurationClass.getMetadata().getClassName() + "]", ex);
+            }
+        });
+    }
 }
 ```
 
@@ -641,13 +640,13 @@ public void processGroupImports() {
 
 ```java
 public Iterable<Group.Entry> getImports() {
-	// 遍历DeferredImportSelectorHolder，该类中保存中@Import注解中需要保存的类型，分别处理对应的导入逻辑
-	for (DeferredImportSelectorHolder deferredImport : this.deferredImports) {
-		// 开始处理单个selector导入
-		this.group.process(deferredImport.getConfigurationClass().getMetadata(),
-				deferredImport.getImportSelector());
-	}
-	return this.group.selectImports();
+    // 遍历DeferredImportSelectorHolder，该类中保存中@Import注解中需要保存的类型，分别处理对应的导入逻辑
+    for (DeferredImportSelectorHolder deferredImport : this.deferredImports) {
+        // 开始处理单个selector导入
+        this.group.process(deferredImport.getConfigurationClass().getMetadata(),
+                deferredImport.getImportSelector());
+    }
+    return this.group.selectImports();
 }
 ```
 
@@ -657,10 +656,10 @@ public Iterable<Group.Entry> getImports() {
 
 ```java
 public void process(AnnotationMetadata metadata, DeferredImportSelector selector) {
-	// 通过selector#selectImports()方法获取导入的class名称列表, 并加入到导入列表中
-	for (String importClassName : selector.selectImports(metadata)) {
-		this.imports.add(new Entry(metadata, importClassName));
-	}
+    // 通过selector#selectImports()方法获取导入的class名称列表, 并加入到导入列表中
+    for (String importClassName : selector.selectImports(metadata)) {
+        this.imports.add(new Entry(metadata, importClassName));
+    }
 }
 ```
 
@@ -672,32 +671,32 @@ public void process(AnnotationMetadata metadata, DeferredImportSelector selector
 
 ```java
 public String[] selectImports(AnnotationMetadata annotationMetadata) {
-	// 获取类加载器
-	ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-	// 这里通过SPI机制，加载BootstrapConfiguration实现类名称列表
-	// 这里使用类名称而不是类的实例，主要是为了防止相同类的重复加载
-	List<String> names = new ArrayList<>(
-			SpringFactoriesLoader.loadFactoryNames(BootstrapConfiguration.class, classLoader));
-	// 从spring.cloud.bootstrap.sources中加载需要配置的类列表
-	names.addAll(Arrays.asList(StringUtils
-			.commaDelimitedListToStringArray(this.environment.getProperty("spring.cloud.bootstrap.sources", ""))));
+    // 获取类加载器
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    // 这里通过SPI机制，加载BootstrapConfiguration实现类名称列表
+    // 这里使用类名称而不是类的实例，主要是为了防止相同类的重复加载
+    List<String> names = new ArrayList<>(
+            SpringFactoriesLoader.loadFactoryNames(BootstrapConfiguration.class, classLoader));
+    // 从spring.cloud.bootstrap.sources中加载需要配置的类列表
+    names.addAll(Arrays.asList(StringUtils
+            .commaDelimitedListToStringArray(this.environment.getProperty("spring.cloud.bootstrap.sources", ""))));
 
-	List<OrderedAnnotatedElement> elements = new ArrayList<>();
-	// 遍历并创建OrderedAnnotatedElement类型，并加入到待加入类列表
-	for (String name : names) {
-		try {
-			elements.add(new OrderedAnnotatedElement(this.metadataReaderFactory, name));
-		}
-		catch (IOException e) {
-			continue;
-		}
-	}
-	// 排序
-	AnnotationAwareOrderComparator.sort(elements);
+    List<OrderedAnnotatedElement> elements = new ArrayList<>();
+    // 遍历并创建OrderedAnnotatedElement类型，并加入到待加入类列表
+    for (String name : names) {
+        try {
+            elements.add(new OrderedAnnotatedElement(this.metadataReaderFactory, name));
+        }
+        catch (IOException e) {
+            continue;
+        }
+    }
+    // 排序
+    AnnotationAwareOrderComparator.sort(elements);
 
-	String[] classNames = elements.stream().map(e -> e.name).toArray(String[]::new);
+    String[] classNames = elements.stream().map(e -> e.name).toArray(String[]::new);
 
-	return classNames;
+    return classNames;
 }
 ```
 
@@ -728,17 +727,17 @@ public String[] selectImports(AnnotationMetadata annotationMetadata) {
 加载共享配置信息
 
 ```java
-	private void loadSharedConfiguration(
-			CompositePropertySource compositePropertySource) {
-		// 获取spring.cloud.nacos.config.share-configs配置，
-		// 这里配置也是通过指定前缀和配置名称加载的，因此不做过解释
-		List<NacosConfigProperties.Config> sharedConfigs = nacosConfigProperties
-				.getSharedConfigs();
-		if (!CollectionUtils.isEmpty(sharedConfigs)) {
-			checkConfiguration(sharedConfigs, "shared-configs");
-			loadNacosConfiguration(compositePropertySource, sharedConfigs);
-		}
-	}
+    private void loadSharedConfiguration(
+            CompositePropertySource compositePropertySource) {
+        // 获取spring.cloud.nacos.config.share-configs配置，
+        // 这里配置也是通过指定前缀和配置名称加载的，因此不做过解释
+        List<NacosConfigProperties.Config> sharedConfigs = nacosConfigProperties
+                .getSharedConfigs();
+        if (!CollectionUtils.isEmpty(sharedConfigs)) {
+            checkConfiguration(sharedConfigs, "shared-configs");
+            loadNacosConfiguration(compositePropertySource, sharedConfigs);
+        }
+    }
 ```
 
 #### loadExtConfiguration()
@@ -746,37 +745,37 @@ public String[] selectImports(AnnotationMetadata annotationMetadata) {
 `spring.cloud.nacos.config.ext-configs`配置加载
 
 ```java
-	private void loadExtConfiguration(CompositePropertySource compositePropertySource) {
-		// 获取ext-configs配置信息，如果配置存在，则加载配置文件
-		List<NacosConfigProperties.Config> extConfigs = nacosConfigProperties
-				.getExtensionConfigs();
-		if (!CollectionUtils.isEmpty(extConfigs)) {
-			checkConfiguration(extConfigs, "extension-configs");
-			loadNacosConfiguration(compositePropertySource, extConfigs);
-		}
-	}
+    private void loadExtConfiguration(CompositePropertySource compositePropertySource) {
+        // 获取ext-configs配置信息，如果配置存在，则加载配置文件
+        List<NacosConfigProperties.Config> extConfigs = nacosConfigProperties
+                .getExtensionConfigs();
+        if (!CollectionUtils.isEmpty(extConfigs)) {
+            checkConfiguration(extConfigs, "extension-configs");
+            loadNacosConfiguration(compositePropertySource, extConfigs);
+        }
+    }
 ```
 
 #### loadApplicationConfiguration()
 
 ```java
 private void loadApplicationConfiguration(
-	CompositePropertySource compositePropertySource, String dataIdPrefix,
-	NacosConfigProperties properties, Environment environment) {
-	// 获取文件后缀信息，默认为properties
-	String fileExtension = properties.getFileExtension();
-	// 获取分组信息，默认值为DEFAULT_GROUP
-	String nacosGroup = properties.getGroup();
-	// 使用默认配置加载配置文件
-	loadNacosDataIfPresent(compositePropertySource, dataIdPrefix, nacosGroup,fileExtension, true);
-	// 加载带有后缀的配置信息，带有后缀的加载信息比默认的配置具有更高的优先级.也就是dataIdPrefix.fileExtension文件名
-	loadNacosDataIfPresent(compositePropertySource,dataIdPrefix + DOT + fileExtension, nacosGroup, fileExtension, true);
-	// 如果环境配置中配置了环境相关信息，则加载带有环境信息的配置
-	// 即加载dataIdPrefix-profile.fileExtension格式的配置，比带有文件后缀的有更高的优先级。
-	for (String profile : environment.getActiveProfiles()) {
-		String dataId = dataIdPrefix + SEP1 + profile + DOT + fileExtension;
-		loadNacosDataIfPresent(compositePropertySource, dataId, nacosGroup,fileExtension, true);
-	}
+    CompositePropertySource compositePropertySource, String dataIdPrefix,
+    NacosConfigProperties properties, Environment environment) {
+    // 获取文件后缀信息，默认为properties
+    String fileExtension = properties.getFileExtension();
+    // 获取分组信息，默认值为DEFAULT_GROUP
+    String nacosGroup = properties.getGroup();
+    // 使用默认配置加载配置文件
+    loadNacosDataIfPresent(compositePropertySource, dataIdPrefix, nacosGroup,fileExtension, true);
+    // 加载带有后缀的配置信息，带有后缀的加载信息比默认的配置具有更高的优先级.也就是dataIdPrefix.fileExtension文件名
+    loadNacosDataIfPresent(compositePropertySource,dataIdPrefix + DOT + fileExtension, nacosGroup, fileExtension, true);
+    // 如果环境配置中配置了环境相关信息，则加载带有环境信息的配置
+    // 即加载dataIdPrefix-profile.fileExtension格式的配置，比带有文件后缀的有更高的优先级。
+    for (String profile : environment.getActiveProfiles()) {
+        String dataId = dataIdPrefix + SEP1 + profile + DOT + fileExtension;
+        loadNacosDataIfPresent(compositePropertySource, dataId, nacosGroup,fileExtension, true);
+    }
 
 }
 ```
@@ -797,35 +796,35 @@ private void loadApplicationConfiguration(
 private void loadNacosDataIfPresent(final CompositePropertySource composite,
 final String dataId, final String group, String fileExtension,
 boolean isRefreshable) {
-	// 判断是否包含了dataId, 如果不包含，则字节返回
-	if (null == dataId || dataId.trim().length() < 1) {
-		return;
-	}
-	// 判断是否包含group, 如果不包含，则返回
-	if (null == group || group.trim().length() < 1) {
-		return;
-	}
-	// 加载NacosPropertySource对象
-	NacosPropertySource propertySource = this.loadNacosPropertySource(dataId, group,
-		fileExtension, isRefreshable);
-	this.addFirstPropertySource(composite, propertySource, false);
+    // 判断是否包含了dataId, 如果不包含，则字节返回
+    if (null == dataId || dataId.trim().length() < 1) {
+        return;
+    }
+    // 判断是否包含group, 如果不包含，则返回
+    if (null == group || group.trim().length() < 1) {
+        return;
+    }
+    // 加载NacosPropertySource对象
+    NacosPropertySource propertySource = this.loadNacosPropertySource(dataId, group,
+        fileExtension, isRefreshable);
+    this.addFirstPropertySource(composite, propertySource, false);
 }
 ```
 
 #### loadNacosPropertySource()
 
 ```java
-	private NacosPropertySource loadNacosPropertySource(final String dataId,
-			final String group, String fileExtension, boolean isRefreshable) {
-		if (NacosContextRefresher.getRefreshCount() != 0) {
-			if (!isRefreshable) {
-				return NacosPropertySourceRepository.getNacosPropertySource(dataId,
-						group);
-			}
-		}
-		return nacosPropertySourceBuilder.build(dataId, group, fileExtension,
-				isRefreshable);
-	}
+    private NacosPropertySource loadNacosPropertySource(final String dataId,
+            final String group, String fileExtension, boolean isRefreshable) {
+        if (NacosContextRefresher.getRefreshCount() != 0) {
+            if (!isRefreshable) {
+                return NacosPropertySourceRepository.getNacosPropertySource(dataId,
+                        group);
+            }
+        }
+        return nacosPropertySourceBuilder.build(dataId, group, fileExtension,
+                isRefreshable);
+    }
 ```
 
 可以看到这里使用到了构造器模式，创建`NacosPropertySource`对象使用`NacosPropertySourceBuilder`对象进行创建。
@@ -833,16 +832,16 @@ boolean isRefreshable) {
 #### addFirstPropertySource()
 
 ```java
-	private void addFirstPropertySource(final CompositePropertySource composite,
-			NacosPropertySource nacosPropertySource, boolean ignoreEmpty) {
-		if (null == nacosPropertySource || null == composite) {
-			return;
-		}
-		if (ignoreEmpty && nacosPropertySource.getSource().isEmpty()) {
-			return;
-		}
-		composite.addFirstPropertySource(nacosPropertySource);
-	}
+    private void addFirstPropertySource(final CompositePropertySource composite,
+            NacosPropertySource nacosPropertySource, boolean ignoreEmpty) {
+        if (null == nacosPropertySource || null == composite) {
+            return;
+        }
+        if (ignoreEmpty && nacosPropertySource.getSource().isEmpty()) {
+            return;
+        }
+        composite.addFirstPropertySource(nacosPropertySource);
+    }
 ```
 
 > 将nacos配置放到环境配置首部，提升优先级。
@@ -854,13 +853,13 @@ boolean isRefreshable) {
 ```java
 NacosPropertySource build(String dataId, String group, String fileExtension,
 boolean isRefreshable) {
-	// 加载配置源列表
-	List<PropertySource<?>> propertySources = loadNacosData(dataId, group,fileExtension);
-	// 创建NacosPropertySource对象
-	NacosPropertySource nacosPropertySource = new NacosPropertySource(propertySources, group, dataId, new Date(), isRefreshable);
-	// 整理nacosPropertySource
-	NacosPropertySourceRepository.collectNacosPropertySource(nacosPropertySource);
-	return nacosPropertySource;
+    // 加载配置源列表
+    List<PropertySource<?>> propertySources = loadNacosData(dataId, group,fileExtension);
+    // 创建NacosPropertySource对象
+    NacosPropertySource nacosPropertySource = new NacosPropertySource(propertySources, group, dataId, new Date(), isRefreshable);
+    // 整理nacosPropertySource
+    NacosPropertySourceRepository.collectNacosPropertySource(nacosPropertySource);
+    return nacosPropertySource;
 }
 ```
 
@@ -871,29 +870,29 @@ private List<PropertySource<?>> loadNacosData(String dataId, String group,
 String fileExtension) {
 String data = null;
 try {
-	// 通过ConfigService加载配置内容问题
-	data = configService.getConfig(dataId, group, timeout);
-	if (StringUtils.isEmpty(data)) {
-		log.warn(
-				"Ignore the empty nacos configuration and get it based on dataId[{}] & group[{}]",
-				dataId, group);
-		return Collections.emptyList();
-	}
-	if (log.isDebugEnabled()) {
-		log.debug(String.format(
-				"Loading nacos data, dataId: '%s', group: '%s', data: %s", dataId,
-				group, data));
-	}
-	// 对文本内容进行解析
-	return NacosDataParserHandler.getInstance().parseNacosData(dataId, data,fileExtension);
-	}
-	catch (NacosException e) {
-		log.error("get data from Nacos error,dataId:{} ", dataId, e);
-	}
-	catch (Exception e) {
-		log.error("parse data from Nacos error,dataId:{},data:{}", dataId, data, e);
-	}
-		return Collections.emptyList();
+    // 通过ConfigService加载配置内容问题
+    data = configService.getConfig(dataId, group, timeout);
+    if (StringUtils.isEmpty(data)) {
+        log.warn(
+                "Ignore the empty nacos configuration and get it based on dataId[{}] & group[{}]",
+                dataId, group);
+        return Collections.emptyList();
+    }
+    if (log.isDebugEnabled()) {
+        log.debug(String.format(
+                "Loading nacos data, dataId: '%s', group: '%s', data: %s", dataId,
+                group, data));
+    }
+    // 对文本内容进行解析
+    return NacosDataParserHandler.getInstance().parseNacosData(dataId, data,fileExtension);
+    }
+    catch (NacosException e) {
+        log.error("get data from Nacos error,dataId:{} ", dataId, e);
+    }
+    catch (Exception e) {
+        log.error("parse data from Nacos error,dataId:{},data:{}", dataId, data, e);
+    }
+        return Collections.emptyList();
 }
 ```
 
@@ -903,58 +902,58 @@ try {
 
 ```java
 private String getConfigInner(String tenant, String dataId, String group, long timeoutMs) throws NacosException {
-	group = blank2defaultGroup(group);
-	ParamUtils.checkKeyParam(dataId, group);
-	ConfigResponse cr = new ConfigResponse();
-	
-	cr.setDataId(dataId);
-	cr.setTenant(tenant);
-	cr.setGroup(group);
-	
-	// 该方法是优先加载本地缓存的配置内容，如果本地缓存的配置内容已经存在，则优先使用本地缓存的配置信息。
-	// 默认配置: JM.SNAPSHOT.PATH -> user.home/nacos. 也就是说，优先查找JM.SNAPSHOT.PATH, 如果不存在，就使用user.home + /nacos作为目录
-	// 其中也包括了几个子目录：
-	// 1. /data: 存放配置地方
-	// 2. /data/config-data: 如果没有租户信息，则使用该目录
-	// 3. /data/config-data-tenant/{tenant}: 如果包含了租户信息，则以及租户路径进行查找
-	String content = LocalConfigInfoProcessor.getFailover(worker.getAgentName(), dataId, group, tenant);
-	if (content != null) {
-		LOGGER.warn("[{}] [get-config] get failover ok, dataId={}, group={}, tenant={}, config={}",
-				worker.getAgentName(), dataId, group, tenant, ContentUtils.truncateContent(content));
-		cr.setContent(content);
-		String encryptedDataKey = LocalEncryptedDataKeyProcessor
-				.getEncryptDataKeyFailover(agent.getName(), dataId, group, tenant);
-		cr.setEncryptedDataKey(encryptedDataKey);
-		configFilterChainManager.doFilter(null, cr);
-		content = cr.getContent();
-		return content;
-	}
-	
-	try {
-		// 如果本地配置不存在，则从远程去获取配置
-		ConfigResponse response = worker.getServerConfig(dataId, group, tenant, timeoutMs, false);
-		cr.setContent(response.getContent());
-		cr.setEncryptedDataKey(response.getEncryptedDataKey());
-		configFilterChainManager.doFilter(null, cr);
-		content = cr.getContent();
-		
-		return content;
-	} catch (NacosException ioe) {
-		...
-	}
+    group = blank2defaultGroup(group);
+    ParamUtils.checkKeyParam(dataId, group);
+    ConfigResponse cr = new ConfigResponse();
 
-	content = LocalConfigInfoProcessor.getSnapshot(worker.getAgentName(), dataId, group, tenant);
-	if (content != null) {
-		LOGGER.warn("[{}] [get-config] get snapshot ok, dataId={}, group={}, tenant={}, config={}",
-				worker.getAgentName(), dataId, group, tenant, ContentUtils.truncateContent(content));
-	}
-	cr.setContent(content);
-	String encryptedDataKey = LocalEncryptedDataKeyProcessor
-			.getEncryptDataKeySnapshot(agent.getName(), dataId, group, tenant);
-	cr.setEncryptedDataKey(encryptedDataKey);
-	configFilterChainManager.doFilter(null, cr);
-	content = cr.getContent();
-	return content;
+    cr.setDataId(dataId);
+    cr.setTenant(tenant);
+    cr.setGroup(group);
+
+    // 该方法是优先加载本地缓存的配置内容，如果本地缓存的配置内容已经存在，则优先使用本地缓存的配置信息。
+    // 默认配置: JM.SNAPSHOT.PATH -> user.home/nacos. 也就是说，优先查找JM.SNAPSHOT.PATH, 如果不存在，就使用user.home + /nacos作为目录
+    // 其中也包括了几个子目录：
+    // 1. /data: 存放配置地方
+    // 2. /data/config-data: 如果没有租户信息，则使用该目录
+    // 3. /data/config-data-tenant/{tenant}: 如果包含了租户信息，则以及租户路径进行查找
+    String content = LocalConfigInfoProcessor.getFailover(worker.getAgentName(), dataId, group, tenant);
+    if (content != null) {
+        LOGGER.warn("[{}] [get-config] get failover ok, dataId={}, group={}, tenant={}, config={}",
+                worker.getAgentName(), dataId, group, tenant, ContentUtils.truncateContent(content));
+        cr.setContent(content);
+        String encryptedDataKey = LocalEncryptedDataKeyProcessor
+                .getEncryptDataKeyFailover(agent.getName(), dataId, group, tenant);
+        cr.setEncryptedDataKey(encryptedDataKey);
+        configFilterChainManager.doFilter(null, cr);
+        content = cr.getContent();
+        return content;
+    }
+
+    try {
+        // 如果本地配置不存在，则从远程去获取配置
+        ConfigResponse response = worker.getServerConfig(dataId, group, tenant, timeoutMs, false);
+        cr.setContent(response.getContent());
+        cr.setEncryptedDataKey(response.getEncryptedDataKey());
+        configFilterChainManager.doFilter(null, cr);
+        content = cr.getContent();
+
+        return content;
+    } catch (NacosException ioe) {
+        ...
+    }
+
+    content = LocalConfigInfoProcessor.getSnapshot(worker.getAgentName(), dataId, group, tenant);
+    if (content != null) {
+        LOGGER.warn("[{}] [get-config] get snapshot ok, dataId={}, group={}, tenant={}, config={}",
+                worker.getAgentName(), dataId, group, tenant, ContentUtils.truncateContent(content));
+    }
+    cr.setContent(content);
+    String encryptedDataKey = LocalEncryptedDataKeyProcessor
+            .getEncryptDataKeySnapshot(agent.getName(), dataId, group, tenant);
+    cr.setEncryptedDataKey(encryptedDataKey);
+    configFilterChainManager.doFilter(null, cr);
+    content = cr.getContent();
+    return content;
 }
 ```
 
