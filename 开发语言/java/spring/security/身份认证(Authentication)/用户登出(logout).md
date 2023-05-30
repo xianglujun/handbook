@@ -129,5 +129,3 @@ public String performLogout(Authentication authentication, HttpServletRequest re
 ## 参考文档
 
 1. [Handling Logouts :: Spring Security](https://docs.spring.io/spring-security/reference/servlet/authentication/logout.html)
-
-
