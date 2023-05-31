@@ -2,7 +2,7 @@
 
 在未登录的情况下，当我们访问需要授权的资源的时候，basic会返回`WWW-Authenticate`的header信息，具体的流程图如下：
 
-![](../../../../../assets/2023-05-29-14-29-51-basicauthenticationentrypoint.png)
+![](../../../../../../assets/55b50b323034008ef48afe7c085edb9b8c7e28db.png)
 
 具体步骤解释如下：
 
@@ -14,7 +14,7 @@
 
 当客户端收到了带有`WWW-Authenticate`响应头信息时，将会带有用户名和密码信息的请求再次发送到服务端，则具体的逻辑如下:
 
-![](../../../../../assets/2023-05-29-15-06-29-basicauthenticationfilter.png)
+![](../../../../../../assets/4fb400aa9d07e9f9271117b1ce4310315aea476f.png)
 
 则对应的spring security的处理流程如下：
 

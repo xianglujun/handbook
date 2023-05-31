@@ -1,6 +1,6 @@
 # 用户名密码表单登录
 
-![](../../../../../assets/2023-05-26-10-29-14-loginurlauthenticationentrypoint.png)
+![](../../../../../../assets/65a5cf3ea899ea5f2fd38ac6e0b02b322bea8f5a.png)
 
 spring security支持通过html表单的方式实现登录。上图则是表单登录的一个流程，则每个步骤解释如下：
 

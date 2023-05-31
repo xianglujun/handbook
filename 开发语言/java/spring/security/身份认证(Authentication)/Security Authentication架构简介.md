@@ -70,17 +70,17 @@
 
 该类持有了AuthenticationProvider示例的列表，在处理`Authentication`信息的时候，每个类都有机会来处理，最终结果可以成功，失败或者不予以处理。当为不予以处理的时候，能够让下游的`AuthenticationProvider`处理。当所有的`Provider`都不能处理Authentication信息时，将会抛出`ProviderNotFoundException`, 用来表示没有`Provider`能够处理当前的`Authentication`类型的信息。
 
-![](../../../../assets/2023-05-25-16-45-06-providermanager.png)
+![](../../../../../assets/24e95b7a0e98a56cc4862711e84021d4e1074dd2.png)
 
 > 每个AuthenticationProvider都可能处理一个或者多个类型的`Authentication`信息。
 
 当然ProviderManager还能够设置一个父`ProviderManager`对象，用以在没有`AuthenticationProvider`可以处理`Authentication`信息的时候，可以交由父`AuthenticationProvider`处理，只是一般来说，一个父实现一般也是`ProviderManager`对象实例。
 
-![](../../../../assets/2023-05-25-16-50-41-providermanager-parent.png)
+![](../../../../../assets/2d5698383efadaf1c213ac43d4452be7520c3d5d.png)
 
 当然，同时也存在多个`ProviderManager`共享一个父`ProviderManager`的情况，主要是因为存在多个`SecurityFilterChain`对象，一般用于同一个系统有不同的认证机制导致的。
 
-![](../../../../assets/2023-05-25-16-52-33-providermanagers-parent.png)
+![](../../../../../assets/8987f5f3c7da79d83ab5e675c967f2ed2efa850b.png)
 
 默认情况下，在用户授权完成之后，会将用户登录密码或者凭证信息情况，以防止信息泄露。这将会导致当前用户再次授权的时候会出现问题，这个时候有几种方法：
 
@@ -100,7 +100,7 @@
 
 ## AbstractAuthenticationProcessingFilter
 
-![](../../../../assets/2023-05-25-17-45-17-abstractauthenticationprocessingfilter.png)
+![loading-ag-871](../../../../../assets/022df680ed1c0a2627d33f45cf2ffda18fe0f247.png)
 
 在以上的图像中，每个步骤的功能如下：
 
