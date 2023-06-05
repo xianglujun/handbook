@@ -237,4 +237,20 @@ boolean supports(Class clazz);
 
 > 当然我们也可以通过自定义的方式来实现自定义的逻辑判断。
 
+#### RoleVoter
+
+该实现方式应该是比较常用的`AccessDecisionVoter`实现，该类的实现主要比对认证的用户信息中是否包含了指定的`ROLE_`前缀的授权信息，如果明确的指定了，则返回认证成功。否者就是认证失败。
+
+#### AuthenticatedVoter
+
+该类主要是用来判断匿名用户，完全认证、和通过remember-me进行认证的用户，在某些网站的实现中，通过`remember-me`进行认证的用户会收到部分权限的限制，因此在访问某些功能的时候，需要二次认证。
+
+该类如果在进行鉴权的时候，使用了`IS_AUTHENTICATED_ANONYMOUSLY`配置，则代表了以上三种情况都是支持的，同时也是支持匿名用户，则返回同意的结果。
+
+#### 自定义Voters
+
+![](../../../../../assets/2023-05-31-17-43-18-after-invocation.png)
+
+跟其他的实现一样的，`AfterInvocationManager`的实现也是只有一个`AfterInvocationProviderManager`对象，该实现持有了`AfterInvocationProvider`列表，并且每个实例都能够修改返回值或者抛出`AccessDeniedException`异常。并且每个`AfterInvocationProvder`修改后的结果会传给下一个provider实例。
+
 
