@@ -263,6 +263,74 @@ SecurityFilterChain web(HttpSecurity http) throws Exception {
 
 6. 其他所有没有匹配到的请求，都直接拒绝。
 
+## Security Matchers
 
+在以上的`RequestMatcher`中，主要用于匹配是否对请求进行鉴权。而`SecurityMatcher`则是用于设置当前的`HttpSecurity`配置是否生效。例如，具有以下配置：
+
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http
+			.securityMatcher("/api/**")
+			.authorizeHttpRequests(authorize -> authorize
+				.requestMatchers("/user/**").hasRole("USER")
+				.requestMatchers("/admin/**").hasRole("ADMIN")
+				.anyRequest().authenticated()
+			)
+			.formLogin(withDefaults());
+		return http.build();
+	}
+}
+```
+
+1. `securityMatcher("/api/**")`配置指定了只对`/api`开头的请求使用`HttpSecurity`配置
+
+2. `requestMatcher("/user/**)"`则指定了针对`/user`开头的请求匹配`ROLE_USER`角色
+
+3. `requestMatcher("/admin/**)"`则指定了针对`/admin`开头的请求匹配`ROLE_ADMIN`角色
+
+4. 其他请求，都需要当前用户身份授权
+
+在使用`requestMatcher`和`securityMatcher`的时候，Spring Security会根据当前的环境采用不同的`RequestMatcher`实现，例如，如果在classpath中检测到了Spring MVC的环境，则会使用`MvcRequestMatcher`. 在其他情况下，将使用`AntPathRequestMatcher`实例。
+
+> `http.securityMatcher()`在较新的版本新增，因此在5.x版本中也是没有该方法的声明
+
+当然，在实现中也是可以自己设置`RequestMatcher`的实现，则具体代码如下：
+
+```java
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher; (1)
+import static org.springframework.security.web.util.matcher.RegexRequestMatcher.regexMatcher;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http
+			.securityMatcher(antMatcher("/api/**"))                              (2)
+			.authorizeHttpRequests(authorize -> authorize
+				.requestMatchers(antMatcher("/user/**")).hasRole("USER")         (3)
+				.requestMatchers(regexMatcher("/admin/.*")).hasRole("ADMIN")     (4)
+				.requestMatchers(new MyCustomRequestMatcher()).hasRole("SUPERVISOR")     (5)
+				.anyRequest().authenticated()
+			)
+			.formLogin(withDefaults());
+		return http.build();
+	}
+}
+
+public class MyCustomRequestMatcher implements RequestMatcher {
+
+    @Override
+    public boolean matches(HttpServletRequest request) {
+        // ...
+    }
+}
+```
 
 
