@@ -86,14 +86,14 @@ public class MyController {
 ```java
 @Bean
 SecurityFilterChain web(HttpSecurity http) throws Exception {
-	http
-		.authorizeHttpRequests((authorize) -> authorize
-			.requestMatchers("/endpoint").hasAuthority('USER')
-			.anyRequest().authenticated()
-		)
+    http
+        .authorizeHttpRequests((authorize) -> authorize
+            .requestMatchers("/endpoint").hasAuthority('USER')
+            .anyRequest().authenticated()
+        )
         // ...
 
-	return http.build();
+    return http.build();
 }
 ```
 
@@ -233,17 +233,17 @@ import static org.springframework.security.authorization.AuthorityAuthorizationM
 
 @Bean
 SecurityFilterChain web(HttpSecurity http) throws Exception {
-	http
-		// ...
-		.authorizeHttpRequests(authorize -> authorize                                  (1)
+    http
+        // ...
+        .authorizeHttpRequests(authorize -> authorize                                  (1)
             .dispatcherTypeMatchers(FORWARD, ERROR).permitAll() (2)
-			.requestMatchers("/static/**", "/signup", "/about").permitAll()         (3)
-			.requestMatchers("/admin/**").hasRole("ADMIN")                             (4)
-			.requestMatchers("/db/**").access(allOf(hasAuthority('db'), hasRole('ADMIN')))   (5)
-			.anyRequest().denyAll()                                                (6)
-		);
+            .requestMatchers("/static/**", "/signup", "/about").permitAll()         (3)
+            .requestMatchers("/admin/**").hasRole("ADMIN")                             (4)
+            .requestMatchers("/db/**").access(allOf(hasAuthority('db'), hasRole('ADMIN')))   (5)
+            .anyRequest().denyAll()                                                (6)
+        );
 
-	return http.build();
+    return http.build();
 }
 ```
 
@@ -272,18 +272,18 @@ SecurityFilterChain web(HttpSecurity http) throws Exception {
 @EnableWebSecurity
 public class SecurityConfig {
 
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-			.securityMatcher("/api/**")
-			.authorizeHttpRequests(authorize -> authorize
-				.requestMatchers("/user/**").hasRole("USER")
-				.requestMatchers("/admin/**").hasRole("ADMIN")
-				.anyRequest().authenticated()
-			)
-			.formLogin(withDefaults());
-		return http.build();
-	}
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/api/**")
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/user/**").hasRole("USER")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            )
+            .formLogin(withDefaults());
+        return http.build();
+    }
 }
 ```
 
@@ -309,19 +309,19 @@ import static org.springframework.security.web.util.matcher.RegexRequestMatcher.
 @EnableWebSecurity
 public class SecurityConfig {
 
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-			.securityMatcher(antMatcher("/api/**"))                              (2)
-			.authorizeHttpRequests(authorize -> authorize
-				.requestMatchers(antMatcher("/user/**")).hasRole("USER")         (3)
-				.requestMatchers(regexMatcher("/admin/.*")).hasRole("ADMIN")     (4)
-				.requestMatchers(new MyCustomRequestMatcher()).hasRole("SUPERVISOR")     (5)
-				.anyRequest().authenticated()
-			)
-			.formLogin(withDefaults());
-		return http.build();
-	}
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher(antMatcher("/api/**"))                              (2)
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(antMatcher("/user/**")).hasRole("USER")         (3)
+                .requestMatchers(regexMatcher("/admin/.*")).hasRole("ADMIN")     (4)
+                .requestMatchers(new MyCustomRequestMatcher()).hasRole("SUPERVISOR")     (5)
+                .anyRequest().authenticated()
+            )
+            .formLogin(withDefaults());
+        return http.build();
+    }
 }
 
 public class MyCustomRequestMatcher implements RequestMatcher {
@@ -332,5 +332,3 @@ public class MyCustomRequestMatcher implements RequestMatcher {
     }
 }
 ```
-
-
