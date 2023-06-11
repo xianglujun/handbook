@@ -37,8 +37,6 @@
 
 > 在该阶段中，为了减少程序停顿的时间，可以采用并行标记的方式，通过`-XX:+CMSParallelInitialMarkEnabled`开启并行标记，同时通过`–XX:ParallelGCThreads=n`设置并发标记的线程数，线程数不要超过cpu核数
 
-
-
 ### 并发标记(CMS-concurrent-mark)
 
 - 并发标记需要从`初始标记`中找出所有存活的对象
@@ -87,15 +85,11 @@
   - 可以通过`-XX:+CMSScavengeBeforeRemark`开启
 - 为了提升该阶段的处理效率，可以开启并行搜集`-XX:+CMSParallelRemarkEnabled`
 
-
-
 ### 并发清理
 
 - 通过以上阶段，老年代的对象已经被全部标记并且通过`Garbage Collector`采用清扫的方式回收不可达对象。这个阶段主要清除没有标记的对象，并且回收空间。
 
 - 该阶段与应用线程并行执行，因此会产生新的垃圾，这一部分垃圾出现在标记过程之后，CMS无法在当次搜集中处理，只好留在下一阶段处理，这部分被称为`浮动垃圾`
-
-
 
 ## CMS 优化
 
@@ -103,13 +97,9 @@
 
 一般CMS 80%的时间都在remark阶段，如果发现remark阶段停顿时间很长。可以通过`-XX:CMSScavengeBeforeRemark`参数，在执行remark阶段之前，执行`Young GC`, 较少年轻代对老年代无用的引用，降低remark时的开销
 
-
-
 ### 内存碎片问题
 
 CMS采用`标记-清除`算法，CMS只会删除无用对象，不会对内存进行压缩，造成内存碎片。内存碎片化会导致分配连续内存时，可能会导致内存分配失败问题，CMS可以支持内存压缩，可以通过`-XX:CMSFullGCsBeforeCompaction=n`来设置，指代上一次CMS并发GC执行后,  需要n次full gc 后，对内存执行压缩。
-
-
 
 ### Concurrent Mode Failure
 
@@ -140,8 +130,6 @@ CMS触发时机有可以通过以下两种方式设置：
 
 `-XX:CMSInitiatingOccupanyFraction`需要设置一个合理的值，设置打了，会增加`Concurrent Mode Failure`发生的频率。设置小了，又会增加CMS频率。
 
-
-
 ### Promotion Failed
 
 在进行Minor GC时，如果`Survivor Space`放不下，对象只能放入老年代，而此时老年代也放不下造成的。在大部分情况下，由于老年代有足够的空间，但是由于碎片太多，导致新生代提升到老年代的对象比较大，无法找到连续内存存放对象导致。
@@ -170,23 +158,21 @@ CMS触发时机有可以通过以下两种方式设置：
 - 如果因为对象提升过快导致，可以尝试调大`Survivor`区域
 - 如果因为老年代内存空间不够导致，可以尝试调低`CMS`触发阈值
 
-
-
 ## CMS相关参数及说明
 
-| 参数                                 | 类型    | 默认值                                       | 说明                                                         |
-| ------------------------------------ | ------- | -------------------------------------------- | ------------------------------------------------------------ |
-| -XX:+UseConcMarkSweepGC              | boolean | false                                        | 老年代采用CMS搜集器                                          |
+| 参数                                   | 类型      | 默认值                                          | 说明                                                                                                                                                                                                 |
+| ------------------------------------ | ------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -XX:+UseConcMarkSweepGC              | boolean | false                                        | 老年代采用CMS搜集器                                                                                                                                                                                        |
 | -XX:+CMSScavengeBeforeRemark         | boolean | false                                        | The CMSScavengeBeforeRemark forces scavenge invocation from the CMS-remark phase (from within the VM thread as the CMS-remark operation is executed in the foreground collector). 是否在执行重新标记时，执行YGC |
-| -XX:UseCMSCompactAtFullCollection    | boolean | false                                        | 对老年代进行压缩，可以消除碎片化，但是可能会带来性能的消耗   |
-| -XX:CMSFullGCsBeforeCompaction=n     | uintx   | 0                                            | CMS进行n次 full gc 后进行一次压缩，如果`n=0`每次full gc后都会进行碎片压缩， |
-| –XX:+CMSIncrementalMode              | boolean | false                                        | 编发搜集递增进行，周期性把cpu资源让给正在运行应用(`在javase8后标记为过期`) |
-| –XX:+CMSIncrementalPacing            | boolean | false                                        | 根据应用程序的行为自动调整每次执行的垃圾回收任务的数量(`在javase8后标记为过期`) |
-| –XX:ParallelGCThreads=n              | uintx   | (ncpus <= 8) ? ncpus : 3 + ((ncpus * 5) / 8) | 并发回收线程数量                                             |
-| -XX:CMSIncrementalDutyCycleMin=n     | uintx   | 0                                            | 每次增量回收垃圾的占总垃圾回收任务的最小比例                 |
-| -XX:CMSIncrementalDutyCycle=n        | uintx   | 10                                           | 每次增量回收垃圾的占总垃圾回收任务的比例                     |
-| -XX:CMSInitiatingOccupancyFraction=n | uintx   | dk5 默认是68% jdk6默认92%                    | 当老年代内存使用达到n%,开始回收。`CMSInitiatingOccupancyFraction = (100 - MinHeapFreeRatio) + (CMSTriggerRatio * MinHeapFreeRatio / 100)` |
-| -XX:CMSMaxAbortablePrecleanTime=n    | uintx   | 5000                                         | 在CMS的preclean阶段开始前，等待minor gc的最大时间。          |
+| -XX:UseCMSCompactAtFullCollection    | boolean | false                                        | 对老年代进行压缩，可以消除碎片化，但是可能会带来性能的消耗                                                                                                                                                                      |
+| -XX:CMSFullGCsBeforeCompaction=n     | uintx   | 0                                            | CMS进行n次 full gc 后进行一次压缩，如果`n=0`每次full gc后都会进行碎片压缩，                                                                                                                                                 |
+| –XX:+CMSIncrementalMode              | boolean | false                                        | 编发搜集递增进行，周期性把cpu资源让给正在运行应用(`在javase8后标记为过期`)                                                                                                                                                       |
+| –XX:+CMSIncrementalPacing            | boolean | false                                        | 根据应用程序的行为自动调整每次执行的垃圾回收任务的数量(`在javase8后标记为过期`)                                                                                                                                                      |
+| –XX:ParallelGCThreads=n              | uintx   | (ncpus <= 8) ? ncpus : 3 + ((ncpus * 5) / 8) | 并发回收线程数量                                                                                                                                                                                           |
+| -XX:CMSIncrementalDutyCycleMin=n     | uintx   | 0                                            | 每次增量回收垃圾的占总垃圾回收任务的最小比例                                                                                                                                                                             |
+| -XX:CMSIncrementalDutyCycle=n        | uintx   | 10                                           | 每次增量回收垃圾的占总垃圾回收任务的比例                                                                                                                                                                               |
+| -XX:CMSInitiatingOccupancyFraction=n | uintx   | dk5 默认是68% jdk6默认92%                         | 当老年代内存使用达到n%,开始回收。`CMSInitiatingOccupancyFraction = (100 - MinHeapFreeRatio) + (CMSTriggerRatio * MinHeapFreeRatio / 100)`                                                                         |
+| -XX:CMSMaxAbortablePrecleanTime=n    | uintx   | 5000                                         | 在CMS的preclean阶段开始前，等待minor gc的最大时间。                                                                                                                                                                |
 
 对于CMS默认的参数设置，可以通过一下命令查看:
 
@@ -195,6 +181,7 @@ java -XX:+PrintFlagsInitial | grep CMS
 ```
 
 ```txt
+
 ```
 
 bool CMSAbortSemantics                         = false                               {product}

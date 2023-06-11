@@ -14,13 +14,9 @@
 
 C1编译器是一个简单快速的编译器，主要的关注点在于局部的优化，适用于执行时间较短或对性能有要求的程序。
 
-
-
 ### C2
 
 C2编译器是长期运行的服务器应用程序做性能调优的编译器，适用于执行时间长或对巅峰性能有要的程序，根据各自的适配性，这两种即时编译也被称为`Client Compiler`和`Server Compiler`
-
-
 
 ### Java7分界线
 
@@ -55,8 +51,6 @@ C2编译器是长期运行的服务器应用程序做性能调优的编译器，
 
 - 方法调用计数器(Invocation Counter)
 - 回边计数器(Back Edge Counter)
-
-
 
 ### 方法调用计数器
 
@@ -155,10 +149,7 @@ public class FreqCode {
         return p + n;
     }
 }
-
 ```
-
-
 
 #### 输出结果
 
@@ -176,8 +167,6 @@ public class FreqCode {
     214   40     n 0       sun.misc.Unsafe::getObjectVolatile (native)   
                               @ 14   sun.misc.Unsafe::getObjectVolatile (0 bytes)   intrinsic
 ```
-
-
 
 ### 输出格式字段说明
 
@@ -199,15 +188,11 @@ timestamp compilation-id flags tiered-compilation-level class:method <@ osr_bci>
 - `code-size`: 总的字节码大小
 - `deoptimization`:  indicated if a method was de-optimized and made `not entrant` or `zombie` (More on this in section titled ‘Dynamic De-optimization’).
 
-
-
 热点方法的优化可以有效提高系统性能，一般我们可以通过以下几种方式来提高方法内联：
 
 - 通过设置JVM参数来减少热点阈值或增加方法体阈值，以便更多的方法可以进行内联，但这种方法以为着占用更多的内存
 - 在编程中，避免在一个方法中写大量代码，习惯使用小方法体
 - 尽量使用final, private, static 关键字修饰方法，编码方法因为继承，会需要额外的类型检查。
-
-
 
 ### 逃逸分析
 
@@ -231,12 +216,10 @@ timestamp compilation-id flags tiered-compilation-level class:method <@ osr_bci>
 
 -XX:+EliminateLocks 开启锁消除(jdk1.8默认开启)
 -XX:-EliminateLocks 关闭锁消除
- 
+
 -XX:+EliminateAllocations 开启标量替换(jdk1.8默认开启)
 -XX:-EliminateAllocations 关闭标量替换
 ```
-
-
 
 ## 反优化（Dynamic De-optimization)
 
@@ -248,4 +231,3 @@ timestamp compilation-id flags tiered-compilation-level class:method <@ osr_bci>
 7964  704 2 org.h2.table.Table::fireAfterRow (17 bytes) made not entrant
 33547 704 2 org.h2.table.Table::fireAfterRow (17 bytes) made zombie
 ```
-
