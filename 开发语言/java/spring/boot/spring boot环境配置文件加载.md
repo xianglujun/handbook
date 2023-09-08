@@ -198,51 +198,51 @@ spring boot的启动都是以SpringApplication为入口，通过run()方法发�
 最终代码会走到SpringApplication构造器中，构造器中包含了包含了初始化的一些代码逻辑，如下：
 
 ```java
-	public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
-		// 资源加载器
-		this.resourceLoader = resourceLoader;
-		// 参数必要验证，启动类不能为空
-		Assert.notNull(primarySources, "PrimarySources must not be null");
-		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
-		// 确定应用类型，主要通过加载特定的class对象判定是否成功，如果成功则为指定类型。
-		// 在web中主要包含了Servlet和WebFlux响应式的两种，如果没有引入web包，则为null
-		this.webApplicationType = WebApplicationType.deduceFromClasspath();
-		// 获取BootstrapRegistryInitializer对象，这里主要通过Spring SPI的方式加载对应的类型
-		// 程序会加载所有jar包中的spring.factories的文件中的配置，并缓存
-		this.bootstrapRegistryInitializers = new ArrayList<>(
-				getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
-		// 获取并初始化ApplicationContextInitializer实例
-		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
-		// 获取并初始化ApplicationListener实例
-		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
-		this.mainApplicationClass = deduceMainApplicationClass();
-	}
+    public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
+        // 资源加载器
+        this.resourceLoader = resourceLoader;
+        // 参数必要验证，启动类不能为空
+        Assert.notNull(primarySources, "PrimarySources must not be null");
+        this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+        // 确定应用类型，主要通过加载特定的class对象判定是否成功，如果成功则为指定类型。
+        // 在web中主要包含了Servlet和WebFlux响应式的两种，如果没有引入web包，则为null
+        this.webApplicationType = WebApplicationType.deduceFromClasspath();
+        // 获取BootstrapRegistryInitializer对象，这里主要通过Spring SPI的方式加载对应的类型
+        // 程序会加载所有jar包中的spring.factories的文件中的配置，并缓存
+        this.bootstrapRegistryInitializers = new ArrayList<>(
+                getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
+        // 获取并初始化ApplicationContextInitializer实例
+        setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+        // 获取并初始化ApplicationListener实例
+        setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+        this.mainApplicationClass = deduceMainApplicationClass();
+    }
 ```
 
 #### run()
 
 ```java
 public ConfigurableApplicationContext run(String... args) {
-	long startTime = System.nanoTime();
-	// 创建启动上下文
-	DefaultBootstrapContext bootstrapContext = createBootstrapContext();
-	ConfigurableApplicationContext context = null;
-	// 设置系统信息
-	configureHeadlessProperty();
-	// 获取SpringApplicationRunLister对象，通过SPI从spring.factories中加载
-	SpringApplicationRunListeners listeners = getRunListeners(args);
-	// 执行starting方法, 通过SpringApplicationRunListeners发送ApplicationStartingEvent事件
-	listeners.starting(bootstrapContext, this.mainApplicationClass);
-	try {
-		// 创建命令行参数对象
-		ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
-		// 准备Environment对象
-		ConfigurableEnvironment environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments);
-		configureIgnoreBeanInfo(environment);
-		....
-	}
-	...
-	return context;
+    long startTime = System.nanoTime();
+    // 创建启动上下文
+    DefaultBootstrapContext bootstrapContext = createBootstrapContext();
+    ConfigurableApplicationContext context = null;
+    // 设置系统信息
+    configureHeadlessProperty();
+    // 获取SpringApplicationRunLister对象，通过SPI从spring.factories中加载
+    SpringApplicationRunListeners listeners = getRunListeners(args);
+    // 执行starting方法, 通过SpringApplicationRunListeners发送ApplicationStartingEvent事件
+    listeners.starting(bootstrapContext, this.mainApplicationClass);
+    try {
+        // 创建命令行参数对象
+        ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+        // 准备Environment对象
+        ConfigurableEnvironment environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments);
+        configureIgnoreBeanInfo(environment);
+        ....
+    }
+    ...
+    return context;
 }
 ```
 
@@ -256,38 +256,38 @@ public ConfigurableApplicationContext run(String... args) {
 
 ```java
 private ConfigurableEnvironment prepareEnvironment(SpringApplicationRunListeners listeners,
-			DefaultBootstrapContext bootstrapContext, ApplicationArguments applicationArguments) {
-		// 创建或获取Environment对象
-		// 该方法会根据webApplicationType创建不同的Environment对象
-		// 如果environment对象已经存在，则直接返回
-		ConfigurableEnvironment environment = getOrCreateEnvironment();
-		// 配置Environment, 
-		// 主要包括设置ConversionService对象
-		// 合并默认的配置信息以及命令行的配置信息，并将source名称定义为commandLineArgs
-		configureEnvironment(environment, applicationArguments.getSourceArgs());
-		// 关联Environment对象，
-		// 该方法主要判断在环境变量中是否已经包含了configurationProperties的resource信息
-		// 如果已经包含，则将该resource方法resources列表的头部，如果不存在，则创建SpringConfigurationPropertySources
-		ConfigurationPropertySources.attach(environment);
-		// 发送ApplicationEnvironmentPreparedEvent事件，并由监听器执行处理该事件
-		// 这里的事件处理机制也是加载各种配置文件的入口地方
-		listeners.environmentPrepared(bootstrapContext, environment);
-		// 将defaultProperties的配置信息移动到resources末尾，相当于降低优先级
-		DefaultPropertiesPropertySource.moveToEnd(environment);
-		Assert.state(!environment.containsProperty("spring.main.environment-prefix"),
-				"Environment prefix cannot be set via properties.");
-		// 将environment和SpringApplication进行绑定
-		bindToSpringApplication(environment);
+            DefaultBootstrapContext bootstrapContext, ApplicationArguments applicationArguments) {
+        // 创建或获取Environment对象
+        // 该方法会根据webApplicationType创建不同的Environment对象
+        // 如果environment对象已经存在，则直接返回
+        ConfigurableEnvironment environment = getOrCreateEnvironment();
+        // 配置Environment, 
+        // 主要包括设置ConversionService对象
+        // 合并默认的配置信息以及命令行的配置信息，并将source名称定义为commandLineArgs
+        configureEnvironment(environment, applicationArguments.getSourceArgs());
+        // 关联Environment对象，
+        // 该方法主要判断在环境变量中是否已经包含了configurationProperties的resource信息
+        // 如果已经包含，则将该resource方法resources列表的头部，如果不存在，则创建SpringConfigurationPropertySources
+        ConfigurationPropertySources.attach(environment);
+        // 发送ApplicationEnvironmentPreparedEvent事件，并由监听器执行处理该事件
+        // 这里的事件处理机制也是加载各种配置文件的入口地方
+        listeners.environmentPrepared(bootstrapContext, environment);
+        // 将defaultProperties的配置信息移动到resources末尾，相当于降低优先级
+        DefaultPropertiesPropertySource.moveToEnd(environment);
+        Assert.state(!environment.containsProperty("spring.main.environment-prefix"),
+                "Environment prefix cannot be set via properties.");
+        // 将environment和SpringApplication进行绑定
+        bindToSpringApplication(environment);
 
-		// 如果是自定义的环境变量，则需要将environment对象转换为StandardEnvironment对象
-		if (!this.isCustomEnvironment) {
-			environment = convertEnvironment(environment);
-		}
-		// 将configurationProperties配置放到resources头部
-		ConfigurationPropertySources.attach(environment);
-		// 返回环境变量对象
-		return environment;
-	}
+        // 如果是自定义的环境变量，则需要将environment对象转换为StandardEnvironment对象
+        if (!this.isCustomEnvironment) {
+            environment = convertEnvironment(environment);
+        }
+        // 将configurationProperties配置放到resources头部
+        ConfigurationPropertySources.attach(environment);
+        // 返回环境变量对象
+        return environment;
+    }
 ```
 
 - configureEnvironment()：该方法主要合并了默认配置信息和命令行的配置信息
@@ -323,20 +323,20 @@ org.springframework.boot.context.event.EventPublishingRunListener
 #### 构造器
 
 ```java
-	public EventPublishingRunListener(SpringApplication application, String[] args) {
-		// 当前正在启动的SpringApplication对象
-		this.application = application;
-		// 命令行参数
-		this.args = args;
-		// 事件分发器初始化
-		this.initialMulticaster = new SimpleApplicationEventMulticaster();
-		// 这里我们知道，在初始化SpringApplication的时候，是从spring.factories中
-		// 加载了配置的ApplicationListener实现实例，因此从application中获取并和
-		// 事件分发器进行绑定
-		for (ApplicationListener<?> listener : application.getListeners()) {
-			this.initialMulticaster.addApplicationListener(listener);
-		}
-	}
+    public EventPublishingRunListener(SpringApplication application, String[] args) {
+        // 当前正在启动的SpringApplication对象
+        this.application = application;
+        // 命令行参数
+        this.args = args;
+        // 事件分发器初始化
+        this.initialMulticaster = new SimpleApplicationEventMulticaster();
+        // 这里我们知道，在初始化SpringApplication的时候，是从spring.factories中
+        // 加载了配置的ApplicationListener实现实例，因此从application中获取并和
+        // 事件分发器进行绑定
+        for (ApplicationListener<?> listener : application.getListeners()) {
+            this.initialMulticaster.addApplicationListener(listener);
+        }
+    }
 ```
 
 #### environmentPrepared()
@@ -344,11 +344,11 @@ org.springframework.boot.context.event.EventPublishingRunListener
 该方法就是用来处理环境environment准备的入口，具体代码如下：
 
 ```java
-	public void environmentPrepared(ConfigurableBootstrapContext bootstrapContext,
-			ConfigurableEnvironment environment) {
-		this.initialMulticaster.multicastEvent(
-				new ApplicationEnvironmentPreparedEvent(bootstrapContext, this.application, this.args, environment));
-	}
+    public void environmentPrepared(ConfigurableBootstrapContext bootstrapContext,
+            ConfigurableEnvironment environment) {
+        this.initialMulticaster.multicastEvent(
+                new ApplicationEnvironmentPreparedEvent(bootstrapContext, this.application, this.args, environment));
+    }
 ```
 
 这个方法就很简单了，主要分为两步：
@@ -371,22 +371,22 @@ org.springframework.boot.context.event.EventPublishingRunListener
 
 ```java
 public void multicastEvent(final ApplicationEvent event, @Nullable ResolvableType eventType) {
-	// 解析泛型，主要获取event的实际类型
-	ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));
-	// 获取线程池对象，如果没有开启异步事件分发，则为null
-	Executor executor = getTaskExecutor();
-	// getApplicationListeners()方法主要根据event的实际类型判断，
-	// listener是否能够处理当前event, 如果能，则返回; 否则过滤掉
-	for (ApplicationListener<?> listener : getApplicationListeners(event, type)) {
-		// 如果线程池对象不为空，则异步执行事件分发
-		if (executor != null) {
-			executor.execute(() -> invokeListener(listener, event));
-		}
-		else {
-			// 否则同步执行分发
-			invokeListener(listener, event);
-		}
-	}
+    // 解析泛型，主要获取event的实际类型
+    ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));
+    // 获取线程池对象，如果没有开启异步事件分发，则为null
+    Executor executor = getTaskExecutor();
+    // getApplicationListeners()方法主要根据event的实际类型判断，
+    // listener是否能够处理当前event, 如果能，则返回; 否则过滤掉
+    for (ApplicationListener<?> listener : getApplicationListeners(event, type)) {
+        // 如果线程池对象不为空，则异步执行事件分发
+        if (executor != null) {
+            executor.execute(() -> invokeListener(listener, event));
+        }
+        else {
+            // 否则同步执行分发
+            invokeListener(listener, event);
+        }
+    }
 }
 ```
 
@@ -398,12 +398,12 @@ public void multicastEvent(final ApplicationEvent event, @Nullable ResolvableTyp
 
 ```java
 private void doInvokeListener(ApplicationListener listener, ApplicationEvent event) {
-	try {
-		listener.onApplicationEvent(event);
-	}
-	catch (ClassCastException ex) {
-		....
-	}
+    try {
+        listener.onApplicationEvent(event);
+    }
+    catch (ClassCastException ex) {
+        ....
+    }
 }
 ```
 
@@ -421,43 +421,43 @@ private void doInvokeListener(ApplicationListener listener, ApplicationEvent eve
 
 ```java
 public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
-	// 获取环境对象
-	ConfigurableEnvironment environment = event.getEnvironment();
+    // 获取环境对象
+    ConfigurableEnvironment environment = event.getEnvironment();
 
-	// bootstrapEnabled: 主要判断是否启用bootstrap, 可以通过判断spring.cloud.bootstrap.enabled=true或org.springframework.cloud.bootstrap.marker.Marker
-	// 能够被加载，因此就算不开启配置，只要引入了spring-cloud-bootstrap包，也就默认配置的开启
-	// useLegacyProcessing()方法用于判断spring.config.use-legacy-processing是否为true
-	if (!bootstrapEnabled(environment) && !useLegacyProcessing(environment)) {
-		return;
-	}
-	// don't listen to events in a bootstrap context
-	// 判断是否包含了bootstrap的配置员，主要是为防止循环监听和加载
-	if (environment.getPropertySources().contains(BOOTSTRAP_PROPERTY_SOURCE_NAME)) {
-		return;
-	}
+    // bootstrapEnabled: 主要判断是否启用bootstrap, 可以通过判断spring.cloud.bootstrap.enabled=true或org.springframework.cloud.bootstrap.marker.Marker
+    // 能够被加载，因此就算不开启配置，只要引入了spring-cloud-bootstrap包，也就默认配置的开启
+    // useLegacyProcessing()方法用于判断spring.config.use-legacy-processing是否为true
+    if (!bootstrapEnabled(environment) && !useLegacyProcessing(environment)) {
+        return;
+    }
+    // don't listen to events in a bootstrap context
+    // 判断是否包含了bootstrap的配置员，主要是为防止循环监听和加载
+    if (environment.getPropertySources().contains(BOOTSTRAP_PROPERTY_SOURCE_NAME)) {
+        return;
+    }
 
-	ConfigurableApplicationContext context = null;
-	// 这里是获取spring.cloud.bootstrap.name的值，默认只为bootstrap.
-	// 这里需要注意，这个时候，环境配置中只包含了环境变量和系统变量以及命令行参数，因此这个配置如果需要
-	// 该表该值，是不可以通过配置文件进行修改，或者定义更高级别的处理方式
-	String configName = environment.resolvePlaceholders("${spring.cloud.bootstrap.name:bootstrap}");
+    ConfigurableApplicationContext context = null;
+    // 这里是获取spring.cloud.bootstrap.name的值，默认只为bootstrap.
+    // 这里需要注意，这个时候，环境配置中只包含了环境变量和系统变量以及命令行参数，因此这个配置如果需要
+    // 该表该值，是不可以通过配置文件进行修改，或者定义更高级别的处理方式
+    String configName = environment.resolvePlaceholders("${spring.cloud.bootstrap.name:bootstrap}");
 
-	// 这里是容器初始代码，这个代码也是在初始化SpringApplication时通过SPI的方式加载
-	// 这段代码主要是获取ApplicationContext容器，如果是具有层级关系的初始化器时，则尝试
-	// 从初始化器中获取ApplicationContext容器
-	for (ApplicationContextInitializer<?> initializer : event.getSpringApplication().getInitializers()) {
-		if (initializer instanceof ParentContextApplicationContextInitializer) {
-			context = findBootstrapContext((ParentContextApplicationContextInitializer) initializer, configName);
-		}
-	}
+    // 这里是容器初始代码，这个代码也是在初始化SpringApplication时通过SPI的方式加载
+    // 这段代码主要是获取ApplicationContext容器，如果是具有层级关系的初始化器时，则尝试
+    // 从初始化器中获取ApplicationContext容器
+    for (ApplicationContextInitializer<?> initializer : event.getSpringApplication().getInitializers()) {
+        if (initializer instanceof ParentContextApplicationContextInitializer) {
+            context = findBootstrapContext((ParentContextApplicationContextInitializer) initializer, configName);
+        }
+    }
 
-	// 如果ApplicationContext容器化没有创建，则创建
-	if (context == null) {
-		context = bootstrapServiceContext(environment, event.getSpringApplication(), configName);
-		event.getSpringApplication().addListeners(new CloseContextOnFailureApplicationListener(context));
-	}
+    // 如果ApplicationContext容器化没有创建，则创建
+    if (context == null) {
+        context = bootstrapServiceContext(environment, event.getSpringApplication(), configName);
+        event.getSpringApplication().addListeners(new CloseContextOnFailureApplicationListener(context));
+    }
 
-	apply(context, event.getSpringApplication(), environment);
+    apply(context, event.getSpringApplication(), environment);
 }
 ```
 
@@ -473,70 +473,70 @@ public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
 
 ```java
 private ConfigurableApplicationContext bootstrapServiceContext(ConfigurableEnvironment environment,
-			final SpringApplication application, String configName) {
-		ConfigurableEnvironment bootstrapEnvironment = new AbstractEnvironment() {
-		};
+            final SpringApplication application, String configName) {
+        ConfigurableEnvironment bootstrapEnvironment = new AbstractEnvironment() {
+        };
 
-		// 获取配置源列表
-		MutablePropertySources bootstrapProperties = bootstrapEnvironment.getPropertySources();
-		// 获取bootstrap配置文件列表
-		String configLocation = environment.resolvePlaceholders("${spring.cloud.bootstrap.location:}");
-		// 获取bootstrap额外配置信息
-		String configAdditionalLocation = environment
-				.resolvePlaceholders("${spring.cloud.bootstrap.additional-location:}");
-		
-		// 创建bootstrap配置映射
-		Map<String, Object> bootstrapMap = new HashMap<>();
-		// 设置spring.config.name配置为bootstrap
-		bootstrapMap.put("spring.config.name", configName);
-		bootstrapMap.put("spring.main.web-application-type", "none");
-		if (StringUtils.hasText(configLocation)) {
-			bootstrapMap.put("spring.config.location", configLocation);
-		}
-		if (StringUtils.hasText(configAdditionalLocation)) {
-			bootstrapMap.put("spring.config.additional-location", configAdditionalLocation);
-		}
-		// 加入bootstrap配置信息
-		bootstrapProperties.addFirst(new MapPropertySource(BOOTSTRAP_PROPERTY_SOURCE_NAME, bootstrapMap));
-		// 从已有environment中读取源数据并加入到新的environment中
-		for (PropertySource<?> source : environment.getPropertySources()) {
-			if (source instanceof StubPropertySource) {
-				continue;
-			}
-			bootstrapProperties.addLast(source);
-		}
+        // 获取配置源列表
+        MutablePropertySources bootstrapProperties = bootstrapEnvironment.getPropertySources();
+        // 获取bootstrap配置文件列表
+        String configLocation = environment.resolvePlaceholders("${spring.cloud.bootstrap.location:}");
+        // 获取bootstrap额外配置信息
+        String configAdditionalLocation = environment
+                .resolvePlaceholders("${spring.cloud.bootstrap.additional-location:}");
 
-		// 构建SpringApplicaionBuilder对象
-		SpringApplicationBuilder builder = new SpringApplicationBuilder().profiles(environment.getActiveProfiles())
-				.bannerMode(Mode.OFF).environment(bootstrapEnvironment)
-				.registerShutdownHook(false).logStartupInfo(false).web(WebApplicationType.NONE);
-		final SpringApplication builderApplication = builder.application();
-		
-		// 如果启动class为空，则使用当前application的主class
-		if (builderApplication.getMainApplicationClass() == null) {
-			builder.main(application.getMainApplicationClass());
-		}
+        // 创建bootstrap配置映射
+        Map<String, Object> bootstrapMap = new HashMap<>();
+        // 设置spring.config.name配置为bootstrap
+        bootstrapMap.put("spring.config.name", configName);
+        bootstrapMap.put("spring.main.web-application-type", "none");
+        if (StringUtils.hasText(configLocation)) {
+            bootstrapMap.put("spring.config.location", configLocation);
+        }
+        if (StringUtils.hasText(configAdditionalLocation)) {
+            bootstrapMap.put("spring.config.additional-location", configAdditionalLocation);
+        }
+        // 加入bootstrap配置信息
+        bootstrapProperties.addFirst(new MapPropertySource(BOOTSTRAP_PROPERTY_SOURCE_NAME, bootstrapMap));
+        // 从已有environment中读取源数据并加入到新的environment中
+        for (PropertySource<?> source : environment.getPropertySources()) {
+            if (source instanceof StubPropertySource) {
+                continue;
+            }
+            bootstrapProperties.addLast(source);
+        }
 
-		// 如果包含refreshArgs配置源，则过滤listener
-		if (environment.getPropertySources().contains("refreshArgs")) {
-			builderApplication.setListeners(filterListeners(builderApplication.getListeners()));
-		}
+        // 构建SpringApplicaionBuilder对象
+        SpringApplicationBuilder builder = new SpringApplicationBuilder().profiles(environment.getActiveProfiles())
+                .bannerMode(Mode.OFF).environment(bootstrapEnvironment)
+                .registerShutdownHook(false).logStartupInfo(false).web(WebApplicationType.NONE);
+        final SpringApplication builderApplication = builder.application();
 
-		// configuration源设置
-		builder.sources(BootstrapImportSelectorConfiguration.class);
-		// 执行run方法，跟SpringApplication.run()方法类似，只是很多参数设置为固定值
-		// 这个时候实际上创建了一个新的ApplicationContext对象
-		final ConfigurableApplicationContext context = builder.run();
-		// 设置当前ApplicationContext的id为bootstrap
-		context.setId("bootstrap");
-		// 为AncestorInitializer对象设置parent的容器信息
-		addAncestorInitializer(application, context);
-		// 从配置源中移除bootstrap配置信息
-		bootstrapProperties.remove(BOOTSTRAP_PROPERTY_SOURCE_NAME);
-		// 合并配置
-		mergeDefaultProperties(environment.getPropertySources(), bootstrapProperties);
-		return context;
-	}
+        // 如果启动class为空，则使用当前application的主class
+        if (builderApplication.getMainApplicationClass() == null) {
+            builder.main(application.getMainApplicationClass());
+        }
+
+        // 如果包含refreshArgs配置源，则过滤listener
+        if (environment.getPropertySources().contains("refreshArgs")) {
+            builderApplication.setListeners(filterListeners(builderApplication.getListeners()));
+        }
+
+        // configuration源设置
+        builder.sources(BootstrapImportSelectorConfiguration.class);
+        // 执行run方法，跟SpringApplication.run()方法类似，只是很多参数设置为固定值
+        // 这个时候实际上创建了一个新的ApplicationContext对象
+        final ConfigurableApplicationContext context = builder.run();
+        // 设置当前ApplicationContext的id为bootstrap
+        context.setId("bootstrap");
+        // 为AncestorInitializer对象设置parent的容器信息
+        addAncestorInitializer(application, context);
+        // 从配置源中移除bootstrap配置信息
+        bootstrapProperties.remove(BOOTSTRAP_PROPERTY_SOURCE_NAME);
+        // 合并配置
+        mergeDefaultProperties(environment.getPropertySources(), bootstrapProperties);
+        return context;
+    }
 ```
 
 #### 2.5.2 EnvironmentPostProcessorApplicationListener
@@ -544,10 +544,10 @@ private ConfigurableApplicationContext bootstrapServiceContext(ConfigurableEnvir
 该监听器主要用于处理EnvironmentPostProcessor的实现，具体加载代码如下：
 
 ```java
-	static EnvironmentPostProcessorsFactory fromSpringFactories(ClassLoader classLoader) {
-		return new ReflectionEnvironmentPostProcessorsFactory(classLoader,
-				SpringFactoriesLoader.loadFactoryNames(EnvironmentPostProcessor.class, classLoader));
-	}
+    static EnvironmentPostProcessorsFactory fromSpringFactories(ClassLoader classLoader) {
+        return new ReflectionEnvironmentPostProcessorsFactory(classLoader,
+                SpringFactoriesLoader.loadFactoryNames(EnvironmentPostProcessor.class, classLoader));
+    }
 ```
 
 可以看出，EnvironmentPostProcessor的执行通过SPI机制进行加载，具体在spring.factories的定义如下：
@@ -571,15 +571,15 @@ org.springframework.boot.reactor.DebugAgentEnvironmentPostProcessor
 
 ```java
 public void onApplicationEvent(ApplicationEvent event) {
-	if (event instanceof ApplicationEnvironmentPreparedEvent) {
-		onApplicationEnvironmentPreparedEvent((ApplicationEnvironmentPreparedEvent) event);
-	}
-	if (event instanceof ApplicationPreparedEvent) {
-		onApplicationPreparedEvent();
-	}
-	if (event instanceof ApplicationFailedEvent) {
-		onApplicationFailedEvent();
-	}
+    if (event instanceof ApplicationEnvironmentPreparedEvent) {
+        onApplicationEnvironmentPreparedEvent((ApplicationEnvironmentPreparedEvent) event);
+    }
+    if (event instanceof ApplicationPreparedEvent) {
+        onApplicationPreparedEvent();
+    }
+    if (event instanceof ApplicationFailedEvent) {
+        onApplicationFailedEvent();
+    }
 }
 ```
 
@@ -589,16 +589,16 @@ public void onApplicationEvent(ApplicationEvent event) {
 
 ```java
 private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event) {
-	// 获取环境变量对象
-	ConfigurableEnvironment environment = event.getEnvironment();
-	// 获取SpringApplication对象
-	SpringApplication application = event.getSpringApplication();
-	// 获取EnvironmentPostProcessor列表
-	for (EnvironmentPostProcessor postProcessor : getEnvironmentPostProcessors(application.getResourceLoader(),
-			event.getBootstrapContext())) {
-		// 遍历并同步调用方法
-		postProcessor.postProcessEnvironment(environment, application);
-	}
+    // 获取环境变量对象
+    ConfigurableEnvironment environment = event.getEnvironment();
+    // 获取SpringApplication对象
+    SpringApplication application = event.getSpringApplication();
+    // 获取EnvironmentPostProcessor列表
+    for (EnvironmentPostProcessor postProcessor : getEnvironmentPostProcessors(application.getResourceLoader(),
+            event.getBootstrapContext())) {
+        // 遍历并同步调用方法
+        postProcessor.postProcessEnvironment(environment, application);
+    }
 }
 ```
 
@@ -614,7 +614,7 @@ private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPrepare
 
 ```java
 public interface EnvironmentPostProcessor {
-	void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application);
+    void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application);
 }
 ```
 
@@ -626,25 +626,25 @@ public interface EnvironmentPostProcessor {
 
 ```java
 void postProcessEnvironment(ConfigurableEnvironment environment, ResourceLoader resourceLoader,
-			Collection<String> additionalProfiles) {
-		try {
-			this.logger.trace("Post-processing environment to add config data");
-			// 获取ResourceLoader对象
-			resourceLoader = (resourceLoader != null) ? resourceLoader : new DefaultResourceLoader();
-			// 获取ConfigDataEnvironment对象，并调用processAndApply()方法
-			getConfigDataEnvironment(environment, resourceLoader, additionalProfiles).processAndApply();
-		}
-		catch (UseLegacyConfigProcessingException ex) {
-			...
-		}
-	}
+            Collection<String> additionalProfiles) {
+        try {
+            this.logger.trace("Post-processing environment to add config data");
+            // 获取ResourceLoader对象
+            resourceLoader = (resourceLoader != null) ? resourceLoader : new DefaultResourceLoader();
+            // 获取ConfigDataEnvironment对象，并调用processAndApply()方法
+            getConfigDataEnvironment(environment, resourceLoader, additionalProfiles).processAndApply();
+        }
+        catch (UseLegacyConfigProcessingException ex) {
+            ...
+        }
+    }
 
-	ConfigDataEnvironment getConfigDataEnvironment(ConfigurableEnvironment environment, ResourceLoader resourceLoader,
-			Collection<String> additionalProfiles) {
-		// 创建爱你ConfigDataEnvironment对象
-		return new ConfigDataEnvironment(this.logFactory, this.bootstrapContext, environment, resourceLoader,
-				additionalProfiles, this.environmentUpdateListener);
-	}
+    ConfigDataEnvironment getConfigDataEnvironment(ConfigurableEnvironment environment, ResourceLoader resourceLoader,
+            Collection<String> additionalProfiles) {
+        // 创建爱你ConfigDataEnvironment对象
+        return new ConfigDataEnvironment(this.logFactory, this.bootstrapContext, environment, resourceLoader,
+                additionalProfiles, this.environmentUpdateListener);
+    }
 ```
 
 对于环境配置处理，最终委派到了`ConfigDataEnvironment`对象中，因此我们需要主要查看该对象内部的处理逻辑。
@@ -658,13 +658,13 @@ void postProcessEnvironment(ConfigurableEnvironment environment, ResourceLoader 
 类初始化主要是为了初始化静态变量相关数据，在该类中，静态初始化主要定义了扫描的配置文件路径信息。
 
 ```java
-	static final ConfigDataLocation[] DEFAULT_SEARCH_LOCATIONS;
-	static {
-		List<ConfigDataLocation> locations = new ArrayList<>();
-		locations.add(ConfigDataLocation.of("optional:classpath:/;optional:classpath:/config/"));
-		locations.add(ConfigDataLocation.of("optional:file:./;optional:file:./config/;optional:file:./config/*/"));
-		DEFAULT_SEARCH_LOCATIONS = locations.toArray(new ConfigDataLocation[0]);
-	}
+    static final ConfigDataLocation[] DEFAULT_SEARCH_LOCATIONS;
+    static {
+        List<ConfigDataLocation> locations = new ArrayList<>();
+        locations.add(ConfigDataLocation.of("optional:classpath:/;optional:classpath:/config/"));
+        locations.add(ConfigDataLocation.of("optional:file:./;optional:file:./config/;optional:file:./config/*/"));
+        DEFAULT_SEARCH_LOCATIONS = locations.toArray(new ConfigDataLocation[0]);
+    }
 ```
 
 这里的配置文件的路径包含了两种：
@@ -689,34 +689,34 @@ void postProcessEnvironment(ConfigurableEnvironment environment, ResourceLoader 
 
 ```java
 ConfigDataEnvironment(DeferredLogFactory logFactory, ConfigurableBootstrapContext bootstrapContext,
-			ConfigurableEnvironment environment, ResourceLoader resourceLoader, Collection<String> additionalProfiles,
-			ConfigDataEnvironmentUpdateListener environmentUpdateListener) {
-		// 创建数据绑定器
-		Binder binder = Binder.get(environment);
-		// 判断是否包含了spring.config.use-legacy-processing的配置, 
-		UseLegacyConfigProcessingException.throwIfRequested(binder);
-		// 创建日志工厂对象
-		this.logFactory = logFactory;
-		// 获取日志打印对象
-		this.logger = logFactory.getLog(getClass());
-		// spring.config.on-not-found配置绑定, 如果没有配置，则使用FAIL对象
-		this.notFoundAction = binder.bind(ON_NOT_FOUND_PROPERTY, ConfigDataNotFoundAction.class)
-				.orElse(ConfigDataNotFoundAction.FAIL);
-		// 启动上下文
-		this.bootstrapContext = bootstrapContext;
-		// 环境变量
-		this.environment = environment;
-		// ConfigDataLocationResolver获取并创建
-		// 从spring.factories中加载ConfigDataLocationResolver并实例化
-		this.resolvers = createConfigDataLocationResolvers(logFactory, bootstrapContext, binder, resourceLoader);
-		this.additionalProfiles = additionalProfiles;
-		this.environmentUpdateListener = (environmentUpdateListener != null) ? environmentUpdateListener
-				: ConfigDataEnvironmentUpdateListener.NONE;
-		// ConfigDataLoaders对象, 用于加载配置文件
-		this.loaders = new ConfigDataLoaders(logFactory, bootstrapContext, resourceLoader.getClassLoader());
-		// 创建ConfigDataEnvironmentContributors对象
-		this.contributors = createContributors(binder);
-	}
+            ConfigurableEnvironment environment, ResourceLoader resourceLoader, Collection<String> additionalProfiles,
+            ConfigDataEnvironmentUpdateListener environmentUpdateListener) {
+        // 创建数据绑定器
+        Binder binder = Binder.get(environment);
+        // 判断是否包含了spring.config.use-legacy-processing的配置, 
+        UseLegacyConfigProcessingException.throwIfRequested(binder);
+        // 创建日志工厂对象
+        this.logFactory = logFactory;
+        // 获取日志打印对象
+        this.logger = logFactory.getLog(getClass());
+        // spring.config.on-not-found配置绑定, 如果没有配置，则使用FAIL对象
+        this.notFoundAction = binder.bind(ON_NOT_FOUND_PROPERTY, ConfigDataNotFoundAction.class)
+                .orElse(ConfigDataNotFoundAction.FAIL);
+        // 启动上下文
+        this.bootstrapContext = bootstrapContext;
+        // 环境变量
+        this.environment = environment;
+        // ConfigDataLocationResolver获取并创建
+        // 从spring.factories中加载ConfigDataLocationResolver并实例化
+        this.resolvers = createConfigDataLocationResolvers(logFactory, bootstrapContext, binder, resourceLoader);
+        this.additionalProfiles = additionalProfiles;
+        this.environmentUpdateListener = (environmentUpdateListener != null) ? environmentUpdateListener
+                : ConfigDataEnvironmentUpdateListener.NONE;
+        // ConfigDataLoaders对象, 用于加载配置文件
+        this.loaders = new ConfigDataLoaders(logFactory, bootstrapContext, resourceLoader.getClassLoader());
+        // 创建ConfigDataEnvironmentContributors对象
+        this.contributors = createContributors(binder);
+    }
 ```
 
 该类的初始化是比较复杂的，包含了多的功能都在初始化的时候完成。因此按照从上到下的顺序一次查看对应的源码。
@@ -724,10 +724,10 @@ ConfigDataEnvironment(DeferredLogFactory logFactory, ConfigurableBootstrapContex
 #### createConfigDataLocationResolvers()
 
 ```java
-	protected ConfigDataLocationResolvers createConfigDataLocationResolvers(DeferredLogFactory logFactory,
-			ConfigurableBootstrapContext bootstrapContext, Binder binder, ResourceLoader resourceLoader) {
-		return new ConfigDataLocationResolvers(logFactory, bootstrapContext, binder, resourceLoader);
-	}
+    protected ConfigDataLocationResolvers createConfigDataLocationResolvers(DeferredLogFactory logFactory,
+            ConfigurableBootstrapContext bootstrapContext, Binder binder, ResourceLoader resourceLoader) {
+        return new ConfigDataLocationResolvers(logFactory, bootstrapContext, binder, resourceLoader);
+    }
 ```
 
 该类方法主要就是为了创建`ConfigDataLocationResolvers`对象，该对象主要持有`ConfigDataLocationResolver`列表，以便后期使用。
@@ -736,28 +736,28 @@ ConfigDataEnvironment(DeferredLogFactory logFactory, ConfigurableBootstrapContex
 
 ```java
 ConfigDataLocationResolvers(DeferredLogFactory logFactory, ConfigurableBootstrapContext bootstrapContext,
-			Binder binder, ResourceLoader resourceLoader) {
-		// 在这一步中，最主要的就是加载ConfigDataLocationResolver的实例，这个实例加载出来的主要是名称的列表
-		this(logFactory, bootstrapContext, binder, resourceLoader, SpringFactoriesLoader
-				.loadFactoryNames(ConfigDataLocationResolver.class, resourceLoader.getClassLoader()));
-	}
-	ConfigDataLocationResolvers(DeferredLogFactory logFactory, ConfigurableBootstrapContext bootstrapContext,
-			Binder binder, ResourceLoader resourceLoader, List<String> names) {
-		// 这一步主要是创建实例化对象，标记了需要实例化的类为ConfigDataLocationResolver, 并且向可用参数中放入了可能得一下参数列表
-		// 当在实例化Instantiator的时候，就可以利用对应的参数信息
-		Instantiator<ConfigDataLocationResolver<?>> instantiator = new Instantiator<>(ConfigDataLocationResolver.class,
-				(availableParameters) -> {
-					availableParameters.add(Log.class, logFactory::getLog);
-					availableParameters.add(DeferredLogFactory.class, logFactory);
-					availableParameters.add(Binder.class, binder);
-					availableParameters.add(ResourceLoader.class, resourceLoader);
-					availableParameters.add(ConfigurableBootstrapContext.class, bootstrapContext);
-					availableParameters.add(BootstrapContext.class, bootstrapContext);
-					availableParameters.add(BootstrapRegistry.class, bootstrapContext);
-				});
-		// 这里对ConfigDataLocationResolver进行实例化，并且对实例化的列表进行重排序
-		this.resolvers = reorder(instantiator.instantiate(resourceLoader.getClassLoader(), names));
-	}
+            Binder binder, ResourceLoader resourceLoader) {
+        // 在这一步中，最主要的就是加载ConfigDataLocationResolver的实例，这个实例加载出来的主要是名称的列表
+        this(logFactory, bootstrapContext, binder, resourceLoader, SpringFactoriesLoader
+                .loadFactoryNames(ConfigDataLocationResolver.class, resourceLoader.getClassLoader()));
+    }
+    ConfigDataLocationResolvers(DeferredLogFactory logFactory, ConfigurableBootstrapContext bootstrapContext,
+            Binder binder, ResourceLoader resourceLoader, List<String> names) {
+        // 这一步主要是创建实例化对象，标记了需要实例化的类为ConfigDataLocationResolver, 并且向可用参数中放入了可能得一下参数列表
+        // 当在实例化Instantiator的时候，就可以利用对应的参数信息
+        Instantiator<ConfigDataLocationResolver<?>> instantiator = new Instantiator<>(ConfigDataLocationResolver.class,
+                (availableParameters) -> {
+                    availableParameters.add(Log.class, logFactory::getLog);
+                    availableParameters.add(DeferredLogFactory.class, logFactory);
+                    availableParameters.add(Binder.class, binder);
+                    availableParameters.add(ResourceLoader.class, resourceLoader);
+                    availableParameters.add(ConfigurableBootstrapContext.class, bootstrapContext);
+                    availableParameters.add(BootstrapContext.class, bootstrapContext);
+                    availableParameters.add(BootstrapRegistry.class, bootstrapContext);
+                });
+        // 这里对ConfigDataLocationResolver进行实例化，并且对实例化的列表进行重排序
+        this.resolvers = reorder(instantiator.instantiate(resourceLoader.getClassLoader(), names));
+    }
 ```
 
 对于Instantiator的初始化逻辑而言，主要是根据构造器的参数类型，获取对应的绑定对应，这样就可以实现对象的初始化操作。这部分代码就不做分析，感兴趣可以查看对应的源码部分。通过该方法我们就拿到了`ConfigDataLocationResolver`对象的列表。
@@ -769,27 +769,27 @@ ConfigDataLocationResolvers(DeferredLogFactory logFactory, ConfigurableBootstrap
 ```java
 ConfigDataLoaders(DeferredLogFactory logFactory, ConfigurableBootstrapContext bootstrapContext,
 ClassLoader classLoader) {
-	// 通过SPI的方式加载ConfigDataLoader对象
-	this(logFactory, bootstrapContext, classLoader,
-		SpringFactoriesLoader.loadFactoryNames(ConfigDataLoader.class, classLoader));
+    // 通过SPI的方式加载ConfigDataLoader对象
+    this(logFactory, bootstrapContext, classLoader,
+        SpringFactoriesLoader.loadFactoryNames(ConfigDataLoader.class, classLoader));
 }
 
 ConfigDataLoaders(DeferredLogFactory logFactory, ConfigurableBootstrapContext bootstrapContext,
 ClassLoader classLoader, List<String> names) {
-	this.logger = logFactory.getLog(getClass());
-	Instantiator<ConfigDataLoader<?>> instantiator = new Instantiator<>(ConfigDataLoader.class,
-		(availableParameters) -> {
-			availableParameters.add(Log.class, logFactory::getLog);
-			availableParameters.add(DeferredLogFactory.class, logFactory);
-			availableParameters.add(ConfigurableBootstrapContext.class, bootstrapContext);
-			availableParameters.add(BootstrapContext.class, bootstrapContext);
-			availableParameters.add(BootstrapRegistry.class, bootstrapContext);
-		});
-	// 初始化ConfigDataLoader对象
-	this.loaders = instantiator.instantiate(classLoader, names);
-	// 因为ConfigDataLoader定义为泛型，因此这里通过反射的方式获取泛型的具体类型
-	// 因此这里记录了加载资源类型的列表
-	this.resourceTypes = getResourceTypes(this.loaders);
+    this.logger = logFactory.getLog(getClass());
+    Instantiator<ConfigDataLoader<?>> instantiator = new Instantiator<>(ConfigDataLoader.class,
+        (availableParameters) -> {
+            availableParameters.add(Log.class, logFactory::getLog);
+            availableParameters.add(DeferredLogFactory.class, logFactory);
+            availableParameters.add(ConfigurableBootstrapContext.class, bootstrapContext);
+            availableParameters.add(BootstrapContext.class, bootstrapContext);
+            availableParameters.add(BootstrapRegistry.class, bootstrapContext);
+        });
+    // 初始化ConfigDataLoader对象
+    this.loaders = instantiator.instantiate(classLoader, names);
+    // 因为ConfigDataLoader定义为泛型，因此这里通过反射的方式获取泛型的具体类型
+    // 因此这里记录了加载资源类型的列表
+    this.resourceTypes = getResourceTypes(this.loaders);
 }
 ```
 
@@ -801,38 +801,38 @@ ClassLoader classLoader, List<String> names) {
 
 ```java
 private ConfigDataEnvironmentContributors createContributors(Binder binder) {
-	//记录日志
-	this.logger.trace("Building config data environment contributors");
-	// 获取当前环境中的配置源列表
-	MutablePropertySources propertySources = this.environment.getPropertySources();
-	List<ConfigDataEnvironmentContributor> contributors = new ArrayList<>(propertySources.size() + 10);
-	PropertySource<?> defaultPropertySource = null;
-	// 遍历配置元对象
-	for (PropertySource<?> propertySource : propertySources) {
-		// 判断是否为默认配置源
-		if (DefaultPropertiesPropertySource.hasMatchingName(propertySource)) {
-			defaultPropertySource = propertySource;
-		}
-		else {
-			// 记录日志
-			this.logger.trace(LogMessage.format("Creating wrapped config data contributor for '%s'",
-					propertySource.getName()));
-			// 创建ConfigDataEnvironmentContributor对象，并放入列表
-			contributors.add(ConfigDataEnvironmentContributor.ofExisting(propertySource));
-		}
-	}
+    //记录日志
+    this.logger.trace("Building config data environment contributors");
+    // 获取当前环境中的配置源列表
+    MutablePropertySources propertySources = this.environment.getPropertySources();
+    List<ConfigDataEnvironmentContributor> contributors = new ArrayList<>(propertySources.size() + 10);
+    PropertySource<?> defaultPropertySource = null;
+    // 遍历配置元对象
+    for (PropertySource<?> propertySource : propertySources) {
+        // 判断是否为默认配置源
+        if (DefaultPropertiesPropertySource.hasMatchingName(propertySource)) {
+            defaultPropertySource = propertySource;
+        }
+        else {
+            // 记录日志
+            this.logger.trace(LogMessage.format("Creating wrapped config data contributor for '%s'",
+                    propertySource.getName()));
+            // 创建ConfigDataEnvironmentContributor对象，并放入列表
+            contributors.add(ConfigDataEnvironmentContributor.ofExisting(propertySource));
+        }
+    }
 
-	// 这里是获取初始化的导入Contributors, 主要包括了：
-	// spring.config.import 配置
-	// spring.config.additional-location 配置
-	// spring.config.location 配置
-	contributors.addAll(getInitialImportContributors(binder));
-	if (defaultPropertySource != null) {
-		this.logger.trace("Creating wrapped config data contributor for default property source");
-		contributors.add(ConfigDataEnvironmentContributor.ofExisting(defaultPropertySource));
-	}
-	// 创建ConfigDataEnvironmentContributors对象
-	return createContributors(contributors);
+    // 这里是获取初始化的导入Contributors, 主要包括了：
+    // spring.config.import 配置
+    // spring.config.additional-location 配置
+    // spring.config.location 配置
+    contributors.addAll(getInitialImportContributors(binder));
+    if (defaultPropertySource != null) {
+        this.logger.trace("Creating wrapped config data contributor for default property source");
+        contributors.add(ConfigDataEnvironmentContributor.ofExisting(defaultPropertySource));
+    }
+    // 创建ConfigDataEnvironmentContributors对象
+    return createContributors(contributors);
 }
 ```
 
@@ -850,24 +850,24 @@ Contributor有几部分组成，可以看到`Kind`值有很多种，
 
 ```java
 void processAndApply() {
-	// 创建ConfigDataImporter对象
-	ConfigDataImporter importer = new ConfigDataImporter(this.logFactory, this.notFoundAction, this.resolvers,
-			this.loaders);
-	// 注册启动binder对象
-	registerBootstrapBinder(this.contributors, null, DENY_INACTIVE_BINDING);
-	// 执行初始化, 包括了加载配置文件信息
-	ConfigDataEnvironmentContributors contributors = processInitial(this.contributors, importer);
-	// 创建ConfigDataActivationContext对象
-	ConfigDataActivationContext activationContext = createActivationContext(contributors.getBinder(null, BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE));
-	// 执行在没有指定profile的时候配置加载
-	contributors = processWithoutProfiles(contributors, importer, activationContext);
-	// 主要从现有的配置源中加载spring.profiles.include信息，并将Profile信息存放在ConfigDataActivationContext中
-	activationContext = withProfiles(contributors, activationContext);
-	// 当设置了Profiles信息的时候，重新加载profile文件信息，例如根据激活的profile信息，则对应加载bootstrap-default.yml等
-	contributors = processWithProfiles(contributors, importer, activationContext);
-	// 将配置信息应用到environment环境中
-	applyToEnvironment(contributors, activationContext, importer.getLoadedLocations(),
-			importer.getOptionalLocations());
+    // 创建ConfigDataImporter对象
+    ConfigDataImporter importer = new ConfigDataImporter(this.logFactory, this.notFoundAction, this.resolvers,
+            this.loaders);
+    // 注册启动binder对象
+    registerBootstrapBinder(this.contributors, null, DENY_INACTIVE_BINDING);
+    // 执行初始化, 包括了加载配置文件信息
+    ConfigDataEnvironmentContributors contributors = processInitial(this.contributors, importer);
+    // 创建ConfigDataActivationContext对象
+    ConfigDataActivationContext activationContext = createActivationContext(contributors.getBinder(null, BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE));
+    // 执行在没有指定profile的时候配置加载
+    contributors = processWithoutProfiles(contributors, importer, activationContext);
+    // 主要从现有的配置源中加载spring.profiles.include信息，并将Profile信息存放在ConfigDataActivationContext中
+    activationContext = withProfiles(contributors, activationContext);
+    // 当设置了Profiles信息的时候，重新加载profile文件信息，例如根据激活的profile信息，则对应加载bootstrap-default.yml等
+    contributors = processWithProfiles(contributors, importer, activationContext);
+    // 将配置信息应用到environment环境中
+    applyToEnvironment(contributors, activationContext, importer.getLoadedLocations(),
+            importer.getOptionalLocations());
 }
 ```
 
@@ -879,8 +879,6 @@ void processAndApply() {
 
 - 将加载的配置文件应用到environment以便于使用
 
-
-
 ### 2.8 ConfigDataEnvironmentContributors
 
 执行数据导入的时候，最终通过该类实现配置文件的导入工作。
@@ -890,67 +888,65 @@ void processAndApply() {
 该方法会执行所有的活跃的`Contributor`对象，并且返回一个新的`ConfigDataEnvironmentContributors`实例对象。
 
 ```java
-	ConfigDataEnvironmentContributors withProcessedImports(ConfigDataImporter importer,
-			ConfigDataActivationContext activationContext) {
-		// 获取导入的阶段
-		// 当activationContext为空的时候，返回：BEFORE_PROFILE_ACTIVATION
-		// 当activetionContext不为空，并且Profiles不为空的时候，则返回：AFTER_PROFILE_ACTIVATION
-		ImportPhase importPhase = ImportPhase.get(activationContext);
-		this.logger.trace(LogMessage.format("Processing imports for phase %s. %s", importPhase,
-				(activationContext != null) ? activationContext : "no activation context"));
-		ConfigDataEnvironmentContributors result = this;
-		int processed = 0;
-		while (true) {
-			// 获取下一个需要执行Contributor对象, 判断是否需要执行，需要满足以下几个条件：
-			// 1. 当前contributor的kink 等于 UNBOUND_IMPORT
-			// 或者
-			// 1. contributor持有的配置properties为空
-			// 2. contributor对应的properties处于active状态
-			ConfigDataEnvironmentContributor contributor = getNextToProcess(result, activationContext, importPhase);
+    ConfigDataEnvironmentContributors withProcessedImports(ConfigDataImporter importer,
+            ConfigDataActivationContext activationContext) {
+        // 获取导入的阶段
+        // 当activationContext为空的时候，返回：BEFORE_PROFILE_ACTIVATION
+        // 当activetionContext不为空，并且Profiles不为空的时候，则返回：AFTER_PROFILE_ACTIVATION
+        ImportPhase importPhase = ImportPhase.get(activationContext);
+        this.logger.trace(LogMessage.format("Processing imports for phase %s. %s", importPhase,
+                (activationContext != null) ? activationContext : "no activation context"));
+        ConfigDataEnvironmentContributors result = this;
+        int processed = 0;
+        while (true) {
+            // 获取下一个需要执行Contributor对象, 判断是否需要执行，需要满足以下几个条件：
+            // 1. 当前contributor的kink 等于 UNBOUND_IMPORT
+            // 或者
+            // 1. contributor持有的配置properties为空
+            // 2. contributor对应的properties处于active状态
+            ConfigDataEnvironmentContributor contributor = getNextToProcess(result, activationContext, importPhase);
 
-			// 如果contributor为空，则表示所有的contributor已经执行完成
-			if (contributor == null) {
-				this.logger.trace(LogMessage.format("Processed imports for of %d contributors", processed));
-				return result;
-			}
+            // 如果contributor为空，则表示所有的contributor已经执行完成
+            if (contributor == null) {
+                this.logger.trace(LogMessage.format("Processed imports for of %d contributors", processed));
+                return result;
+            }
 
-			// 判断需要执行的contributor的kind是否为UNBOUND_IMPORT, 如果是，则重新构建ConfigDataEnvironmentContributors并继续遍历Contributor
-			// UNBOUND_IMPORT表示了当前的ConfigData数据依赖了其他的Contributor配置
-			if (contributor.getKind() == Kind.UNBOUND_IMPORT) {
-				// 创建UNBOUND_IMPORT的kind 类型contributor
-				ConfigDataEnvironmentContributor bound = contributor.withBoundProperties(result, activationContext);
-				result = new ConfigDataEnvironmentContributors(this.logger, this.bootstrapContext,
-						result.getRoot().withReplacement(contributor, bound));
-				continue;
-			}
+            // 判断需要执行的contributor的kind是否为UNBOUND_IMPORT, 如果是，则重新构建ConfigDataEnvironmentContributors并继续遍历Contributor
+            // UNBOUND_IMPORT表示了当前的ConfigData数据依赖了其他的Contributor配置
+            if (contributor.getKind() == Kind.UNBOUND_IMPORT) {
+                // 创建UNBOUND_IMPORT的kind 类型contributor
+                ConfigDataEnvironmentContributor bound = contributor.withBoundProperties(result, activationContext);
+                result = new ConfigDataEnvironmentContributors(this.logger, this.bootstrapContext,
+                        result.getRoot().withReplacement(contributor, bound));
+                continue;
+            }
 
-			// 创建ConfigDataLocationResolverContext上下文对象
-			ConfigDataLocationResolverContext locationResolverContext = new ContributorConfigDataLocationResolverContext(
-					result, contributor, activationContext);
-			// 创建ConfigDataLoaderContext上下文对象
-			ConfigDataLoaderContext loaderContext = new ContributorDataLoaderContext(this);
-			// 获取当前contributor需要加载的配置文件路径列表
-			List<ConfigDataLocation> imports = contributor.getImports();
-			this.logger.trace(LogMessage.format("Processing imports %s", imports));
-			// 根据需要加载的文件路径列表，从路径加载对应文件，并存储在ConfigData中
-			Map<ConfigDataResolutionResult, ConfigData> imported = importer.resolveAndLoad(activationContext,
-					locationResolverContext, loaderContext, imports);
-			this.logger.trace(LogMessage.of(() -> getImportedMessage(imported.keySet())));
+            // 创建ConfigDataLocationResolverContext上下文对象
+            ConfigDataLocationResolverContext locationResolverContext = new ContributorConfigDataLocationResolverContext(
+                    result, contributor, activationContext);
+            // 创建ConfigDataLoaderContext上下文对象
+            ConfigDataLoaderContext loaderContext = new ContributorDataLoaderContext(this);
+            // 获取当前contributor需要加载的配置文件路径列表
+            List<ConfigDataLocation> imports = contributor.getImports();
+            this.logger.trace(LogMessage.format("Processing imports %s", imports));
+            // 根据需要加载的文件路径列表，从路径加载对应文件，并存储在ConfigData中
+            Map<ConfigDataResolutionResult, ConfigData> imported = importer.resolveAndLoad(activationContext,
+                    locationResolverContext, loaderContext, imports);
+            this.logger.trace(LogMessage.of(() -> getImportedMessage(imported.keySet())));
 
-			// 这里主要是创建一个包含当前Contributor的一个ConfigDataEnvironmentContributor对象
-			ConfigDataEnvironmentContributor contributorAndChildren = contributor.withChildren(importPhase,
-					asContributors(imported));
-			// 这里会生成一个新的ConfigDataEnvironmentContributors对象，新的对象中会将当前的contributor对象的处理结果进行替换
-			// 这样做的目的是：当有resource被处理完成后，就不需要重复处理了。
-			// 当有的资源依赖于其他的contributor处理结果时，还有可以被继续处理的机会
-			result = new ConfigDataEnvironmentContributors(this.logger, this.bootstrapContext,
-					result.getRoot().withReplacement(contributor, contributorAndChildren));
-			processed++;
-		}
-	}
+            // 这里主要是创建一个包含当前Contributor的一个ConfigDataEnvironmentContributor对象
+            ConfigDataEnvironmentContributor contributorAndChildren = contributor.withChildren(importPhase,
+                    asContributors(imported));
+            // 这里会生成一个新的ConfigDataEnvironmentContributors对象，新的对象中会将当前的contributor对象的处理结果进行替换
+            // 这样做的目的是：当有resource被处理完成后，就不需要重复处理了。
+            // 当有的资源依赖于其他的contributor处理结果时，还有可以被继续处理的机会
+            result = new ConfigDataEnvironmentContributors(this.logger, this.bootstrapContext,
+                    result.getRoot().withReplacement(contributor, contributorAndChildren));
+            processed++;
+        }
+    }
 ```
-
-
 
 ### 2.9 ConfigDataImporter
 
@@ -959,22 +955,22 @@ void processAndApply() {
 #### resolveAndLoad()
 
 ```java
-		Map<ConfigDataResolutionResult, ConfigData> resolveAndLoad(ConfigDataActivationContext activationContext,
-			ConfigDataLocationResolverContext locationResolverContext, ConfigDataLoaderContext loaderContext,
-			List<ConfigDataLocation> locations) {
-		try {
-			Profiles profiles = (activationContext != null) ? activationContext.getProfiles() : null;
-			// 根据locations定义，封装成为ConfigDataResolutionResult对象，该对象中包含了需要处理的配置文件路径信息。
-			// 这里的处理主要通过SPI加载到的ConfigDataLocationResolver实例，并判断ConfigDataLocationResolver是否能够处理路径的文件
-			// 这里其实只是做了一个判断，如果不满足的ConfigDataLocationResolver会被过滤掉，最终不会执行
-			List<ConfigDataResolutionResult> resolved = resolve(locationResolverContext, profiles, locations);
-			// 根据ConfigDataResolutionResult结果，加载对应配置文件
-			return load(loaderContext, resolved);
-		}
-		catch (IOException ex) {
-			throw new IllegalStateException("IO error on loading imports from " + locations, ex);
-		}
-	}
+        Map<ConfigDataResolutionResult, ConfigData> resolveAndLoad(ConfigDataActivationContext activationContext,
+            ConfigDataLocationResolverContext locationResolverContext, ConfigDataLoaderContext loaderContext,
+            List<ConfigDataLocation> locations) {
+        try {
+            Profiles profiles = (activationContext != null) ? activationContext.getProfiles() : null;
+            // 根据locations定义，封装成为ConfigDataResolutionResult对象，该对象中包含了需要处理的配置文件路径信息。
+            // 这里的处理主要通过SPI加载到的ConfigDataLocationResolver实例，并判断ConfigDataLocationResolver是否能够处理路径的文件
+            // 这里其实只是做了一个判断，如果不满足的ConfigDataLocationResolver会被过滤掉，最终不会执行
+            List<ConfigDataResolutionResult> resolved = resolve(locationResolverContext, profiles, locations);
+            // 根据ConfigDataResolutionResult结果，加载对应配置文件
+            return load(loaderContext, resolved);
+        }
+        catch (IOException ex) {
+            throw new IllegalStateException("IO error on loading imports from " + locations, ex);
+        }
+    }
 ```
 
 #### load()
@@ -982,40 +978,40 @@ void processAndApply() {
 ```java
 private Map<ConfigDataResolutionResult, ConfigData> load(ConfigDataLoaderContext loaderContext,
 List<ConfigDataResolutionResult> candidates) throws IOException {
-	Map<ConfigDataResolutionResult, ConfigData> result = new LinkedHashMap<>();
+    Map<ConfigDataResolutionResult, ConfigData> result = new LinkedHashMap<>();
 
-	// 开始遍历配置文件路径结果
-	for (int i = candidates.size() - 1; i >= 0; i--) {
-		ConfigDataResolutionResult candidate = candidates.get(i);
-		// 获取文件路径
-		ConfigDataLocation location = candidate.getLocation();
-		// 获取文件资源
-		ConfigDataResource resource = candidate.getResource();
-		// 资源是否为可选，该值是在创建ConfigDataResource的时候，需要手动设置该值true/false; 默认值为false
-		if (resource.isOptional()) {
-			this.optionalLocations.add(location);
-		}
-		// 判断当前的资源时候覅偶已经被加载, 如果资源已经被加载，则放入到loadedLocations列表中
-		if (this.loaded.contains(resource)) {
-			this.loadedLocations.add(location);
-		}
-		else {
-			try {
-				// 代码走到这里，就表示了资源没有被加载, 通过ConfigDataLoader进行配置文件加载
-				ConfigData loaded = this.loaders.load(loaderContext, resource);
-				// 不为空，则表示资源加载成功, 则进行资源状态的映射和存储
-				if (loaded != null) {
-					this.loaded.add(resource);
-					this.loadedLocations.add(location);
-					result.put(candidate, loaded);
-				}
-			}
-			catch (ConfigDataNotFoundException ex) {
-				handle(ex, location, resource);
-			}
-		}
-	}
-	return Collections.unmodifiableMap(result);
+    // 开始遍历配置文件路径结果
+    for (int i = candidates.size() - 1; i >= 0; i--) {
+        ConfigDataResolutionResult candidate = candidates.get(i);
+        // 获取文件路径
+        ConfigDataLocation location = candidate.getLocation();
+        // 获取文件资源
+        ConfigDataResource resource = candidate.getResource();
+        // 资源是否为可选，该值是在创建ConfigDataResource的时候，需要手动设置该值true/false; 默认值为false
+        if (resource.isOptional()) {
+            this.optionalLocations.add(location);
+        }
+        // 判断当前的资源时候覅偶已经被加载, 如果资源已经被加载，则放入到loadedLocations列表中
+        if (this.loaded.contains(resource)) {
+            this.loadedLocations.add(location);
+        }
+        else {
+            try {
+                // 代码走到这里，就表示了资源没有被加载, 通过ConfigDataLoader进行配置文件加载
+                ConfigData loaded = this.loaders.load(loaderContext, resource);
+                // 不为空，则表示资源加载成功, 则进行资源状态的映射和存储
+                if (loaded != null) {
+                    this.loaded.add(resource);
+                    this.loadedLocations.add(location);
+                    result.put(candidate, loaded);
+                }
+            }
+            catch (ConfigDataNotFoundException ex) {
+                handle(ex, location, resource);
+            }
+        }
+    }
+    return Collections.unmodifiableMap(result);
 }
 ```
 
@@ -1026,14 +1022,14 @@ List<ConfigDataResolutionResult> candidates) throws IOException {
 #### load()
 
 ```java
-	<R extends ConfigDataResource> ConfigData load(ConfigDataLoaderContext context, R resource) throws IOException {
-		// 根据resource类型获取ConfigDataLoader对象, 这里的resource实际上就是泛型中定义的resource类型
-		ConfigDataLoader<R> loader = getLoader(context, resource);
-		this.logger.trace(LogMessage.of(() -> "Loading " + resource + " using loader " + loader.getClass().getName()));
-		// 调用load方法加载配置文件。
-		// 配置文件的加载每个Loader的实现各异
-		return loader.load(context, resource);
-	}
+    <R extends ConfigDataResource> ConfigData load(ConfigDataLoaderContext context, R resource) throws IOException {
+        // 根据resource类型获取ConfigDataLoader对象, 这里的resource实际上就是泛型中定义的resource类型
+        ConfigDataLoader<R> loader = getLoader(context, resource);
+        this.logger.trace(LogMessage.of(() -> "Loading " + resource + " using loader " + loader.getClass().getName()));
+        // 调用load方法加载配置文件。
+        // 配置文件的加载每个Loader的实现各异
+        return loader.load(context, resource);
+    }
 ```
 
 `getLoader()`方法主要是根据`Resource`具体的类型来获取对应的`ConfigDataLoader`类，这样就可以直接调用到具体的加载逻辑，因此`getLoader()`的方法可以自行查看。
@@ -1047,25 +1043,25 @@ List<ConfigDataResolutionResult> candidates) throws IOException {
 ```java
 public ConfigData load(ConfigDataLoaderContext context, StandardConfigDataResource resource)
 throws IOException, ConfigDataNotFoundException {
-	// 如果资源目标是一个文件夹，则返回空配置数据
-	if (resource.isEmptyDirectory()) {
-		return ConfigData.EMPTY;
-	}
+    // 如果资源目标是一个文件夹，则返回空配置数据
+    if (resource.isEmptyDirectory()) {
+        return ConfigData.EMPTY;
+    }
 
-	// 如果配置文件不存在，则抛出异常
-	ConfigDataResourceNotFoundException.throwIfDoesNotExist(resource, resource.getResource());
-	// 获取资源文件的引用
-	StandardConfigDataReference reference = resource.getReference();
-	// 获取资源文件源对象
-	Resource originTrackedResource = OriginTrackedResource.of(resource.getResource(),
-		Origin.from(reference.getConfigDataLocation()));
-	String name = String.format("Config resource '%s' via location '%s'", resource,
-		reference.getConfigDataLocation());
-	// 加载资源对象，这里资源的对象会根据后缀的不同，使用不同的对象进行加载。
-	List<PropertySource<?>> propertySources = reference.getPropertySourceLoader().load(name, originTrackedResource);
-	// 判断资源是否制定了profile, 如果制定，则包装成为PropertySourceOptions对象
-	PropertySourceOptions options = (resource.getProfile() != null) ? PROFILE_SPECIFIC : NON_PROFILE_SPECIFIC;
-	return new ConfigData(propertySources, options);
+    // 如果配置文件不存在，则抛出异常
+    ConfigDataResourceNotFoundException.throwIfDoesNotExist(resource, resource.getResource());
+    // 获取资源文件的引用
+    StandardConfigDataReference reference = resource.getReference();
+    // 获取资源文件源对象
+    Resource originTrackedResource = OriginTrackedResource.of(resource.getResource(),
+        Origin.from(reference.getConfigDataLocation()));
+    String name = String.format("Config resource '%s' via location '%s'", resource,
+        reference.getConfigDataLocation());
+    // 加载资源对象，这里资源的对象会根据后缀的不同，使用不同的对象进行加载。
+    List<PropertySource<?>> propertySources = reference.getPropertySourceLoader().load(name, originTrackedResource);
+    // 判断资源是否制定了profile, 如果制定，则包装成为PropertySourceOptions对象
+    PropertySourceOptions options = (resource.getProfile() != null) ? PROFILE_SPECIFIC : NON_PROFILE_SPECIFIC;
+    return new ConfigData(propertySources, options);
 }
 ```
 
@@ -1081,21 +1077,21 @@ throws IOException, ConfigDataNotFoundException {
 
 ```java
 private List<ConfigDataResolutionResult> resolve(ConfigDataLocationResolver<?> resolver,
-	ConfigDataLocationResolverContext context, ConfigDataLocation location, Profiles profiles) {
-	
-	// 这里主要用于获取默认的配置文件信息，这里的加载不带有任何环境信息
-	List<ConfigDataResolutionResult> resolved = resolve(location, false, () -> resolver.resolve(context, location));
-	if (profiles == null) {
-		return resolved;
-	}
+    ConfigDataLocationResolverContext context, ConfigDataLocation location, Profiles profiles) {
 
-	// 这里的文件的配置，是带有Profile信息的配置文件加载。
-	// 当第一次加载的时候，其实并没有profiles信息，因此这里是加载不到的
-	// 当默认application配置中配置了spring.profiles.active的时候，则带有profiles配置，
-	// 该配置就会生效
-	List<ConfigDataResolutionResult> profileSpecific = resolve(location, true,
-		() -> resolver.resolveProfileSpecific(context, location, profiles));
-	return merge(resolved, profileSpecific);
+    // 这里主要用于获取默认的配置文件信息，这里的加载不带有任何环境信息
+    List<ConfigDataResolutionResult> resolved = resolve(location, false, () -> resolver.resolve(context, location));
+    if (profiles == null) {
+        return resolved;
+    }
+
+    // 这里的文件的配置，是带有Profile信息的配置文件加载。
+    // 当第一次加载的时候，其实并没有profiles信息，因此这里是加载不到的
+    // 当默认application配置中配置了spring.profiles.active的时候，则带有profiles配置，
+    // 该配置就会生效
+    List<ConfigDataResolutionResult> profileSpecific = resolve(location, true,
+        () -> resolver.resolveProfileSpecific(context, location, profiles));
+    return merge(resolved, profileSpecific);
 }
 ```
 
@@ -1127,23 +1123,23 @@ listeners.contextPrepared(context);
 
 ```java
 private void reorderSources(ConfigurableEnvironment environment) {
-	// 从配置源中移除springCloudDefaultProperties配置
-	PropertySource<?> removed = environment.getPropertySources().remove(DEFAULT_PROPERTIES);
-	// 判断是否为ExtendedDefaultPropertySource的子类
-	if (removed instanceof ExtendedDefaultPropertySource) {
-		ExtendedDefaultPropertySource defaultProperties = (ExtendedDefaultPropertySource) removed;
-		// 将springCloudDefaultProperties重新加入到配置源中
-		environment.getPropertySources()
-				.addLast(new MapPropertySource(DEFAULT_PROPERTIES, defaultProperties.getSource()));
-		// 遍历springCloudDefaultProperties中的已经加载的配置源信息，这里就主要包括了
-		// bootstrap, bootstrap-profile等配置文件内容
-		// 这里我们可以知道，bootstrap的优先级在application之后的, 因此在启动的过程中，可以知道bootstrap的优先级很低
-		for (PropertySource<?> source : defaultProperties.getPropertySources().getPropertySources()) {
-			if (!environment.getPropertySources().contains(source.getName())) {
-				environment.getPropertySources().addBefore(DEFAULT_PROPERTIES, source);
-			}
-		}
-	}
+    // 从配置源中移除springCloudDefaultProperties配置
+    PropertySource<?> removed = environment.getPropertySources().remove(DEFAULT_PROPERTIES);
+    // 判断是否为ExtendedDefaultPropertySource的子类
+    if (removed instanceof ExtendedDefaultPropertySource) {
+        ExtendedDefaultPropertySource defaultProperties = (ExtendedDefaultPropertySource) removed;
+        // 将springCloudDefaultProperties重新加入到配置源中
+        environment.getPropertySources()
+                .addLast(new MapPropertySource(DEFAULT_PROPERTIES, defaultProperties.getSource()));
+        // 遍历springCloudDefaultProperties中的已经加载的配置源信息，这里就主要包括了
+        // bootstrap, bootstrap-profile等配置文件内容
+        // 这里我们可以知道，bootstrap的优先级在application之后的, 因此在启动的过程中，可以知道bootstrap的优先级很低
+        for (PropertySource<?> source : defaultProperties.getPropertySources().getPropertySources()) {
+            if (!environment.getPropertySources().contains(source.getName())) {
+                environment.getPropertySources().addBefore(DEFAULT_PROPERTIES, source);
+            }
+        }
+    }
 }
 ```
 
