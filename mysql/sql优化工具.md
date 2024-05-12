@@ -3,23 +3,15 @@
 1. 使用explain的方式查看sql执行计划
 2. 通过Show Profile 分析SQL执行性能
 
-
-
 ## Explain
 
 [explain查看sql执行计划](./SQL优化方法.md)
-
-
 
 ## Show Profile分析SQL执行性能
 
 通过EXPLAIN 分析执行计划，仅仅是停留在分析SQL的外部执行情况，如果我们想深入分析到MYSQL内核中，从执行线程的状态和时间来分析的话，这个时候就需要选择Profile
 
-
-
 Profile除了可以分析执行线程的状态和时间，还支持进一步选择`ALL`, `CPU`, `MEMORY`, `BLOCK IO`, `CONTEXT SWITCHES`等类型来查询SQL语句在不同系统资源上所消耗的时间。
-
-
 
 ```sql
 SHOW PROFILE [type [, type]...]
@@ -56,8 +48,4 @@ show profiles
 
 ## 查看具体的sql的执行性能
 show profile for query 1190
-
 ```
-
-
-

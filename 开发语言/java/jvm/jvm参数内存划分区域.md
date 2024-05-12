@@ -1,6 +1,6 @@
 # jvm 内存划分区域参数
 
-![内存区域的划分图](../../img/jvm/Java-Memory-Model.png)
+![内存区域的划分图](../../../img/jvm/Java-Memory-Model.png)
 
 ## -Xms
 
