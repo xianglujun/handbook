@@ -25,7 +25,6 @@ tar -zxvf mysql-8.0.31-linux-glibc2.17-aarch64.tar.gz
 ```shell
 # 判断是否包含mysql用户组
 groups mysql
-
 ```
 
 ![](../assets/2022-10-22-21-42-50-image.png)
@@ -208,5 +207,3 @@ grant all privileges on *.* to 'root'@'%'  with grant option;
 ### 8.1 客户端访问8.0的时候，提示`### Public Key Retrieval is not allowed`
 
 用户使用了 sha256_password 认证，密码在传输过程中必须使用 TLS 协议保护，其中如果 RSA 公钥不可用，可以使用服务器提供的公钥；即可以在连接中通过 `ServerRSAPublicKeyFile `指定服务器的 RSA 公钥，或者用`AllowPublicKeyRetrieval=True`参数以允许客户端从服务器获取公钥；但是需要注意的是这可能会导致恶意的代理通过中间人攻击(MITM)获取到明文密码，所以默认是关闭的，必须在url参数中添加`allowPublicKeyRetrieval=true`用于开启。
-
-

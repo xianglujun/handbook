@@ -407,13 +407,9 @@ private void objectFactoryElement(XNode context) throws Exception {
 
 解析ObjectWrapperFactory节点，这个节点候选更新.....
 
-
-
 ### reflectorFactoryElement()
 
 后续更新
-
-
 
 ### environmentsElement()
 
@@ -840,7 +836,7 @@ private void parameterMapElement(List<XNode> list) {
 ```java
 private ResultMap resultMapElement(XNode resultMapNode, List<ResultMapping> additionalResultMappings, Class<?> enclosingType) {
     ErrorContext.instance().activity("processing " + resultMapNode.getValueBasedIdentifier());
-  
+
     // 获取结果类型, 取type, ofType, resultType, javaType属性中一个即可
     String type = resultMapNode.getStringAttribute("type",
         resultMapNode.getStringAttribute("ofType",
@@ -854,7 +850,7 @@ private ResultMap resultMapElement(XNode resultMapNode, List<ResultMapping> addi
     }
     Discriminator discriminator = null;
     List<ResultMapping> resultMappings = new ArrayList<>(additionalResultMappings);
-    
+
     // 获取所有子节点
     List<XNode> resultChildren = resultMapNode.getChildren();
     for (XNode resultChild : resultChildren) {
@@ -875,7 +871,7 @@ private ResultMap resultMapElement(XNode resultMapNode, List<ResultMapping> addi
         resultMappings.add(buildResultMappingFromContext(resultChild, typeClass, flags));
       }
     }
-    
+
     // 获取resultMap的唯一编号信息
     // getValueBasedIdentifier()方法会遍历所有的父节点，并加父节点信息拼接到id标识中
     // 因此resultMap其实应该是某个namespace独有的
@@ -979,7 +975,7 @@ public void parseStatementNode() {
     String nodeName = context.getNode().getNodeName();
     // 获取sql操作类型，
     SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
-    
+
     // 是否为select
     boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
     // 是否刷新缓存, 这里设定只有不是select, 都需要刷新缓存

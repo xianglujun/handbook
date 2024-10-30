@@ -9,15 +9,20 @@ Spring Boot 2.x 已经发布了很久，现在 Spring Cloud 也发布了 基于 
 > Spring Cloud Edgware SR4 => Spring Cloud Finchley.RELEASE
 
 ## eureka server
+
 ### eureka 依赖更新
+
 升级前
+
 ```xml
 <dependency>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-eureka-server</artifactId>
 </dependency>
 ```
+
 升级后
+
 ```xml
 <dependency>
     <groupId>org.springframework.cloud</groupId>
@@ -26,10 +31,13 @@ Spring Boot 2.x 已经发布了很久，现在 Spring Cloud 也发布了 基于 
 ```
 
 ## eureka client
+
 因为配置中心需要作为服务注册到注册中心，所以需要升级 Eureka Client，其他依赖没有变动。
 
 ### eureka client 依赖更新
+
 升级前
+
 ```xml
 <dependency>
     <groupId>org.springframework.cloud</groupId>
@@ -38,27 +46,34 @@ Spring Boot 2.x 已经发布了很久，现在 Spring Cloud 也发布了 基于 
 ```
 
 升级后
+
 ```xml
 <dependency>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 </dependency>
 ```
+
 ## spring cloud
+
 ### 注册中心的客户端IP显示不正确
+
 因为 Spring Cloud 获取服务客户端 IP 地址配置变更了。
 
 升级前
+
 ```java
 ${spring.cloud.client.ipAddress}
 ```
+
 升级后
+
 ```java
 ${spring.cloud.client.ip-address}
 ```
 
-
 ## Spring Security
+
 一般注册中心、配置中心都会使用安全加密，就会依赖 spring-boot-starter-security 组件，升级后有几下两个问题。
 
 ### 1、用户名和密码无法登录
@@ -66,6 +81,7 @@ ${spring.cloud.client.ip-address}
 因为 Spring Security 的参数进行了变更。
 
 升级前：
+
 ```yml
 security:
   user:
@@ -74,6 +90,7 @@ security:
 ```
 
 升级后：
+
 ```yml
 spring:
   security:
@@ -89,6 +106,7 @@ spring:
 因为 Spring Security 默认开启了所有 CSRF 攻击防御，需要禁用 /eureka 的防御。
 
 在 Application 入口类增加忽略配置：
+
 ```java
 @EnableWebSecurity
 static class WebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -108,6 +126,7 @@ static class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 现在想变回之前的 basic auth 认证方式，找源码发现是自动配置跳到了登录页面，现在重写一下。
 
 自动配置源码：
+
 ```java
 org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter#configure(org.springframework.security.config.annotation.web.builders.HttpSecurity)
 protected void configure(HttpSecurity http) throws Exception {
@@ -123,6 +142,7 @@ protected void configure(HttpSecurity http) throws Exception {
 ```
 
 重写之后：
+
 ```java
 @EnableWebSecurity
 static class WebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -144,21 +164,26 @@ static class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 恢复 basic auth 之后，之前的服务需要加密连接配置中心的又正常运行了。
 
 ## Maven
+
 升级到 Spring Boot 2.x 之后发现 Spring Boot 的 Maven 启动插件不好用了，主要是 Profile 不能自由切换。
 
 升级前：
+
 ```sh
 spring-boot:run -Drun.profiles=profile1
 ```
+
 升级后：
+
 ```sh
 spring-boot:run -Dspring-boot.run.profiles=profile1
 ```
+
 具体的请参考：
 https://docs.spring.io/spring...
 
-
 ## 总结
+
 以上都是踩完所有的坑总结出来的解决方案，实际解决问题的过程远要复杂的多。版本变化有点大，本次已成功升级了 Spring Cloud 基础依赖，及注册中心（Eureka Server）、配置中心（Config Server）。
 
 其他像 Gateway 代替了 Zuul, 及其他组件再慢慢升级，Spring Cloud 的快速发展令升级变得非常蛋疼，本文记录了升级过程中踩过的所有的坑。。。

@@ -19,38 +19,26 @@
 - 自定义类加载器
   - 在类加载器中，是由类加载器实例以及类的全限定名来唯一确定
 
-
-
 ## 链接
 
 通过验证、准备、解析三个阶段，将加载的类能够在JVM中执行。
 
-
-
 ### 验证
 
 验证阶段目的在于，保证被加载的类能够满足JVM约束条件，能够在JVM中正常执行。
-
-
 
 ### 准备
 
 - 在该阶段，会为被加载的类静态字段分配内存。但是在该阶段，分配的值，都是默认值，具体的值，会在`初始化`阶段完成
 - 在部分JVM上，还会在此阶段构造其他跟类层次相关的数据结构。例如：为类的每个方法生成符号引用，这个服务号引用能够无歧义地能够定位到具体的目标上。
 
-
-
 ### 解析
 
 解析的目的，正是将符号引用解析成为实际引用。如果符号引用指向一个没有被加载的类，或者字段、方法，那么都将出发目标类的加载。
 
-
-
 ## 初始化
 
 初始化阶段，则是为静态字段复制，以及执行静态代码块的过程。JVM通过枷锁来保证类的`<clinit>`方法只会被执行一次。
-
-
 
 在Java中，对静态字段的赋值，包含两种方式：
 
@@ -58,8 +46,6 @@
 - 静态代码块赋值
 
 在直接赋值中，`常量`是静态字段中特殊的一种，如果常量的类型为`基本类型`或者`字符串时`， 会被Java编译器标记成为常量值`ConstantValue`. 其值由JVM完成初始化。
-
-
 
 ### 初始化条件
 
@@ -97,15 +83,14 @@ public class Singleton {
         // 触发了类型初始化操作, 因为INSTANCE是引用类型，最终会初始化。
         return LazyHolder.INSTANCE;
     }
-    
+
     public static void main(String[] args) {
-        
+
         Singleton.getInstance(true);
         System.out.println("---");
         Singleton.getInstance(false);
     }
 }
-
 ```
 
 ### 修改字节码
@@ -121,7 +106,6 @@ java -cp d:/projects/asmtools.jar org.openjdk.asmtools.jasm.Main Singleton\$Lazy
 
 # 执行程序
 java -verbose:class Singleton
-
 ```
 
 通过以上操作，可以查看，其实在`getInstance(false)`才出发了`链接中的验证步骤`
@@ -156,6 +140,4 @@ Exception Details:
         at com.jdk.test.demo.java.jvm.Singleton.main(Singleton.java:27)
 [Loaded java.lang.Shutdown from C:\Program Files\Java\jre1.8.0_144\lib\rt.jar]
 [Loaded java.lang.Shutdown$Lock from C:\Program Files\Java\jre1.8.0_144\lib\rt.jar]
-
 ```
-
