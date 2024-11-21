@@ -1,7 +1,8 @@
 # yum软件库替换
-## 将yum的库更新为国内的库
-``` sh
 
+## 将yum的库更新为国内的库
+
+```sh
 1. 本分库
 mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
 
