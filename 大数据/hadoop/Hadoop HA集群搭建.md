@@ -39,6 +39,8 @@ scp /etc/hosts node4:/etc/hosts
 
 ![](../../assets/06821f28d74766c90b8b14b50e83d57ada262a7c.png)
 
+> Journal Node主要作用是同步NameNode的信息到standy的NameNode节点，这样就可以NameNode集群的数据一致性。
+
 ### 2.1 SSH免密登录
 
 SSH免密登录，可以参考[hadoop安装](./hadoop安装.md)中的免密登录作为参考。
