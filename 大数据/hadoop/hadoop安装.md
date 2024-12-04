@@ -216,7 +216,11 @@ start-dfs.sh
 
 ![](../../assets/2024-11-27-10-14-48-image.png)
 
-## 4. 问题以及解决办法
+## 4. windows上如何安装
+
+因为hadoop默认没有提供windows的安装版本，我们可以使用[GitHub - cdarlint/winutils: winutils.exe hadoop.dll and hdfs.dll binaries for hadoop windows](https://github.com/cdarlint/winutils)，然后下载对应版本并替换windows上解压包中的bin文件目录即可。
+
+## 5. 问题以及解决办法
 
 #### org.apache.hadoop.hdfs.server.protocol.DisallowedDatanodeException: Datanode denied communication with namenode because hostname cannot be resolved
 
@@ -227,14 +231,11 @@ start-dfs.sh
 - 在`hdfs-site.xml`中关闭Hosts的检查，主要配置如下:
 
 ```xml
-
         <property>
             <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
             <value>false</value>
 
         </property>
-
-
 ```
 
 ### 在50070webui上能够看到3个存活节点，但是只看到一个DataNode信息
@@ -250,5 +251,3 @@ hostnamectl set-hostname node1
 在查看DataNode节点列表时，已经能够正确展示三个了
 
 ![](../../assets/2024-11-27-14-30-51-image.png)
-
-
