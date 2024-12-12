@@ -77,7 +77,7 @@ cp conf/hive-default.xml.template conf/hive-site.xml
         </property>
         <property>
                 <name>javax.jdo.option.ConnectionURL</name>
-                <value>jdbc:mysql://node1:3306/hive?createDatabaseIfNotExist=true&llowPublicKeyRetrieval=true</value>
+                <value>jdbc:mysql://node1:3306/hive?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true</value>
         </property>
 
         <property>
