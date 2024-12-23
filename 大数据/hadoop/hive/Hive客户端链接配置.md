@@ -26,7 +26,7 @@
         </property>
         <property>
                 <name>javax.jdo.option.ConnectionURL</name>
-                <value>jdbc:mysql://192.168.56.102:3306/hive?createDatabaseIfNotExist=true&amp;allowPublicKeyRetrieval=true</value>
+                <value>jdbc:mysql://192.168.56.102:3306/hive?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true</value>
         </property>
         <property>
                 <name>javax.jdo.option.ConnectionUserName</name>
@@ -67,6 +67,39 @@
 Hive在连接的时候可以设置授权信息，但是官方提供的[Setting Up HiveServer2 - Apache Hive - Apache Software Foundation](https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2#SettingUpHiveServer2-PluggableAuthenticationModules(PAM))集中方式中，我没有LDAP或者KERBEROS，因此我使用了`CUSTOM`的方式，自己实现了一个简单的授权工具。
 
 > 在以上的配置中，有`hive.server2.enable.doAs`的配置，该配置默认是true, 这个配置表明是否按照Hive登录的用户去操作hadoop, 如果为true的话，则需要登录的用户在hadoop中也存在，否则将会抛出`org.apache.hadoop.ipc.RemoteException:User: xxx is not allowed to impersonate root`.
+
+## server2的高可用配置
+
+```xml
+<property>
+    <name>hive.server2.dynamic.service.discovery</name>
+    <value>true</value>
+</property>
+<property>
+    <name>hive.server2.zookeeper.namespace</name>
+    <value>hiveserver2_zk</value>
+</property>
+<property>
+    <name>hive.zookeeper.quorum</name>
+    <value>node1:2181,node2:2181,node3:2181</value>
+</property>
+<property>
+    <name>hive.zookeeper.client.port</name>
+    <value>2181</value>
+</property>
+<property>
+    <name>hive.server2.thrift.bind.host</name>
+    <value>node2</value>
+</property>
+<property>
+    <name>hive.server2.thrift.port</name>
+    <value>10001</value>
+</property>
+```
+
+> 在集群中的访问方式为：
+> 
+> jdbc:hive2://node1,node2,node3/mydb;serviceDiscoveryMode=zookeeper;zooKeeperNamespace=hiveserver2_zk
 
 ## 授权实现
 
@@ -130,7 +163,6 @@ public class PasswordAuthenticationProvider implements PasswdAuthenticationProvi
         throw new AuthenticationException("用户名或密码错误");
     }
 }
-
 ```
 
 > 这个实现很简单，没有复杂的点，就是在文件中按照`user:pwd`的方式存储，然后在初始化的时候将信息放入到map， 然后匹配用户名和密码即可。
