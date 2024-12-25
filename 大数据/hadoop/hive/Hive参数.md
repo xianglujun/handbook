@@ -122,14 +122,13 @@ select * from bucket_table tablesample (bucket 1 out of 4 on columns)
 
 ```sql
 CREATE  table bucket1(
-	id int, name string, age int
+    id int, name string, age int
 ) row format delimited fields terminated by ',';
 ```
 
 数据格式如下：
 
 ```textile
-
 1,tom,11
 2,cat,22
 3,dog,33
@@ -167,5 +166,3 @@ insert into table bucket1_bucket select id, name, age from bucket1;
 ```sql
 select id, name, age from bucket1_bucket tablesample(bucket 2 out of 4 on age)
 ```
-
-

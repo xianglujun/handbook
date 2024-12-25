@@ -105,7 +105,7 @@ HBase客户端查找关注的行范围所在的RegionServer。 它通过查询`h
 
 - 向客户端发送写入成功的消息
 
-- 等达到memStore写入数据限制时，将数据写入到HFile中
+- 0等达到memStore写入数据限制时，将数据写入到HFile中
 
 ### Zookeeper
 
@@ -163,6 +163,24 @@ HMaster不对提供对外的数据操作，而是将具体的操作交由RegionS
 
 - 客户端检索数据，先查找MemStore，再BlockCache(查询缓存)， 找不到再找StoreFile
 
+## HBase特点
 
+- 强大的一致读/写: HBase不是`最终一致性`的DateStore, 他非常适合告诉计算器聚合等任务
 
+- 自动分片：HBase表通过Region分布在集群上，并随着数据的增长, Region会自动分割和重新分配
 
+- 自动的RegionServer故障转移
+
+- Hadoop/HDFS集成：HBase支持HDFS作为其分布式文件系统
+
+- MapReduce：HBase通过MapReduce进行大规模并行处理，将HBase用作源和漏。即`HBase->MR->HDFS`或者`HBase -> MR -> HBase -> HDFS -> MR -> HBase`
+
+- Java客户端API：HBase支持易于使用的Java API以进行编程访问
+
+- Thrfit / REST API：HBase还支持非Java前端的Thrift和REST
+
+- 块缓存和布隆过滤器：HBase支持块缓存和布隆过滤器，已实现大容量查询优化。
+
+- HBase内置网页，用于运维监控和JMX指标
+
+- 缺点：`不支持行间事务，但是支持行内事务`
