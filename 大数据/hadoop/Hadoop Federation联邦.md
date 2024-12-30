@@ -6,8 +6,6 @@
 
 200个节点的集群中每个节点有24TB存储空间，block大小为128MB， block复制因子为3，能存12500,000个block; 200x24,000,000MB/(128MB*3)，此时，NameNode内存大概需要12.5GB
 
-
-
 ## 2. HDFS组成
 
 ### Namespace

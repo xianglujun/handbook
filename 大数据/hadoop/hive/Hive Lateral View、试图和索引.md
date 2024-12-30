@@ -86,5 +86,3 @@ alter index index_name on table_name rebuild;
 ```sql
 drop index [if exists] index_name on table_name;
 ```
-
-
