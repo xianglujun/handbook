@@ -156,7 +156,3 @@ insert overwrite table tablename1 [partitioin (partcol=val..)]
 - **INSERT OVERWRITE**：表示覆盖
 
 - **INSERT INTO**：表示追加
-
-
-
-
