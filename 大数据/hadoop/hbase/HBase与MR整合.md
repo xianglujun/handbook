@@ -462,7 +462,6 @@ public class SentencesInitializer {
         }
     }
 }
-
 ```
 
 > 该类主要是从该类所在的目录下读取sentences.txt文件，文件内容自己定义就行，然后将数据初始化到指定的`namespace:table`表中
@@ -519,7 +518,6 @@ public class WordCountFromHbaseMapper implements TableMap<Text, LongWritable> {
 
     }
 }
-
 ```
 
 #### WordCountFromHbaseReducer
@@ -606,7 +604,6 @@ public class WordCountFromHbaseReducer implements TableReduce<Text, LongWritable
         }
     }
 }
-
 ```
 
 #### WordCountFromHbaseMain
@@ -674,7 +671,6 @@ public class WordCountFromHbaseMain {
         System.out.println("任务是否执行完成： " + completed);
     }
 }
-
 ```
 
 执行以上代码，将会看到成功的结果标志：
@@ -685,4 +681,4 @@ public class WordCountFromHbaseMain {
 
 ![](../../../assets/2025-01-03-10-40-26-image.png)
 
-以上就是HBase和Hadoop MapReduce任务整合的视线过程。
+以上就是HBase和Hadoop MapReduce任务整合的实现过程。

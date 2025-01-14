@@ -613,5 +613,8 @@ a1.sinks.k1.incrementMetrics.200 = true
 Flume也支持自定义Sink，在实现时需要实现`Sink`接口，在实现Sink后，它所依赖的所有的文件都必须放在agent执行的classpath中， 具体配置如下：
 
 ```properties
-
+a1.channels = c1
+a1.sinks = k1
+a1.sinks.k1.type = org.example.MySink
+a1.sinks.k1.channel = c1
 ```

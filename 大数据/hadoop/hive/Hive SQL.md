@@ -55,6 +55,18 @@ with serdeproperties(
 192.168.57.4 - - [29/Feb/2016:18:14:35+0800] "GET[29/Feb/2016:18:14:36+08001/tomcat.css HTTP/1.1” 304 -
 ```
 
+## Hive排序方式
+
+Hive支持一下集中排序方式：
+
+- `order by`：对于查询结果做全排序，只允许有一个reduce处理，当数据量较大时，应该慎用，严格模式下，必须配合limit使用
+
+- `sort by`：对于单个reduce的数据进行排序
+
+- `distribute by`- 分区排序，经常和sort by 一起使用
+
+- `cluster by`- 相当于sort by + distribute by. cluster by 不能通过`asc, desc`来指定升序或者降序。
+
 ## Hive函数
 
 ### 内置运算符
@@ -557,9 +569,7 @@ create function s_concat as 'org.hadoop.hive.learn.udaf.ConcatStrFunc' using jar
 
 ![](../../../assets/2024-12-17-12-31-57-image.png)
 
-这就表示函数自定完成并成功投入使用。
-
-# 
+这就表示函数自定完成并成功投入使用。 
 
 ## 使用示例
 

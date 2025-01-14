@@ -373,8 +373,6 @@ public Object execute(SqlSession sqlSession, Object[] args) {
     }
     return result;
   }
-
-
 ```
 
 在上面的执行源码中，有比较多相同方法的调用，例如: `convertArgsToSqlCommandParam()`、`rowCountResult()`方法的调用, 这里就优先查看这些公共方法所做的事情，然后再单独看每个操作的个性。
@@ -814,7 +812,7 @@ case SELECT:
 ```java
 private <E> Object executeForMany(SqlSession sqlSession, Object[] args) {
     List<E> result;
-      
+
     // 获取参数对象
     Object param = method.convertArgsToSqlCommandParam(args);
     // 判断参数是否包含RowBounds
@@ -847,7 +845,7 @@ private <E> Object executeForMany(SqlSession sqlSession, Object[] args) {
 ```java
 private <K, V> Map<K, V> executeForMap(SqlSession sqlSession, Object[] args) {
     Map<K, V> result;
-     
+
     // 获取参数
     Object param = method.convertArgsToSqlCommandParam(args);
     // 是否包含了RowBounds
@@ -1328,8 +1326,6 @@ public <K, V> Map<K, V> selectMap(String statement, Object parameter, String map
     // 返回map的结果
     return mapResultHandler.getMappedResults();
   }
-
-
 ```
 
 ##### DefaultMapResultHandler
@@ -1348,8 +1344,6 @@ public void handleResult(ResultContext<? extends V> context) {
     // 加入到结果集
     mappedResults.put(key, value);
   }
-
-
 ```
 
 #### selectCursor
@@ -1358,7 +1352,7 @@ public void handleResult(ResultContext<? extends V> context) {
 
 ```java
 public <E> Cursor<E> handleCursorResultSets(Statement stmt) throws SQLException {
-   
+
     ErrorContext.instance().activity("handling cursor results").object(mappedStatement.getId());
 
     ResultSetWrapper rsw = getFirstResultSet(stmt);
@@ -1378,7 +1372,5 @@ public <E> Cursor<E> handleCursorResultSets(Statement stmt) throws SQLException 
 ```
 
 这里就不详细介绍cursor的使用，如果有兴趣可以自己查看一下源码。
-
-
 
 以上就是Mapper的执行原理，如果对你有帮助，请为文章点赞.

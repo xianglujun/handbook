@@ -132,7 +132,6 @@ public interface Executor {
   void setExecutorWrapper(Executor executor);
 
 }
-
 ```
 
 在`Executor`中大多都是处于基础功能的实现，包括了数据库的查询、缓存管理、事务提交等，但是可以看到的是，在`Executor`中并没有与业务关联的部分，因此`Executor`更多的是对数据库层面的抽象，更多的业务抽象都放在了`SqlSession`中实现。
@@ -211,7 +210,7 @@ public interface Interceptor {
     // 该行主要是从Intercetor中获取@Intercepts注解中的所有内容，
     // 并返回一个map关系
     Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);
-    
+
     // 目标对象的类型
     Class<?> type = target.getClass();
     // 获取目标对象target的所有实现的接口
